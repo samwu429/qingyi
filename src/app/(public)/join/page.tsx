@@ -98,7 +98,7 @@ export default async function JoinPage() {
         >
           <div className="border border-mist-100/10 bg-white p-8">
             <h2 className="font-display text-2xl font-bold text-mist-100">
-              准备好加入了吗？
+              准备好开始内容陪跑了吗？
             </h2>
             {join.contactNote ? (
               <p className="mt-3 text-mist-300">{join.contactNote}</p>

@@ -55,7 +55,7 @@ export function SiteHeader() {
             href="/join"
             className="bg-jade-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600"
           >
-            立即签约
+            申请加入
           </Link>
         </div>
 

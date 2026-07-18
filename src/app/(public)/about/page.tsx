@@ -18,7 +18,11 @@ export default async function AboutPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="About" title="关于青意传媒" />
+      <PageHeader
+        eyebrow="About"
+        title="关于青意传媒"
+        description="创意内容公会：创作者孵化、平台分发与内容 IP 变现。"
+      />
 
       <Container className="py-14">
         <p className="max-w-3xl whitespace-pre-wrap text-lg leading-relaxed text-mist-200">

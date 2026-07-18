@@ -10,8 +10,9 @@ import { cn } from "@/lib/ui/cn";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "签约主播",
-  description: "青意传媒旗下签约主播名录，涵盖娱乐、才艺、游戏等多元内容方向。",
+  title: "签约创作者",
+  description:
+    "青意传媒签约创作者名录：覆盖娱乐、才艺、游戏等赛道，展示人设定位与内容方向。",
 };
 
 // Public streamer roster with category filtering and pagination. Query
@@ -34,9 +35,9 @@ export default async function StreamersPage({
   return (
     <div>
       <PageHeader
-        eyebrow="Talents"
-        title="签约主播"
-        description="风格各异的优质主播矩阵，覆盖娱乐、才艺、游戏、生活等多元方向。"
+        eyebrow="Creators"
+        title="签约创作者"
+        description="多元赛道的内容创作者矩阵，覆盖娱乐、才艺、游戏与生活等内容方向。"
       />
 
       <Container className="py-14">

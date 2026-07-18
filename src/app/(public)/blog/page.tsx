@@ -30,7 +30,7 @@ export default async function BlogPage({
       <PageHeader
         eyebrow="News"
         title="动态资讯"
-        description="关注公会最新动态、平台活动与主播成长故事。"
+        description="关注公会动态、平台分发趋势与创作者运营复盘。"
       />
 
       <Container className="py-14">

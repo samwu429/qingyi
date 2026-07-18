@@ -43,9 +43,9 @@ export default async function HomePage() {
         <section className="py-20">
           <Container>
             <SectionHeading
-              eyebrow="Why Qingyi"
-              title="为什么选择青意传媒"
-              lead="从零到头部，我们提供主播成长所需的一切支持。"
+              eyebrow="Creative Ops"
+              title="内容产业里的三件实事"
+              lead="人设真实感、算法可见性、内容 IP 变现——只做能落地的陪跑。"
             />
             <div className="mt-12 grid gap-px bg-mist-100/10 md:grid-cols-3">
               {home.highlights.map((item, index) => (
@@ -74,9 +74,9 @@ export default async function HomePage() {
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SectionHeading
-                eyebrow="Talents"
-                title="签约主播"
-                lead="风格各异的优质主播，总有一位打动你。"
+                eyebrow="Creators"
+                title="签约创作者"
+                lead="不同赛道的内容创作者，正在把个人风格做成可持续的内容品牌。"
               />
               <ButtonLink href="/streamers" variant="ghost">
                 查看全部 →
@@ -96,9 +96,9 @@ export default async function HomePage() {
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SectionHeading
-                eyebrow="News"
-                title="最新动态"
-                lead="了解公会资讯、活动与主播成长故事。"
+                eyebrow="Updates"
+                title="公会动态"
+                lead="平台趋势、运营复盘与创作者成长观察。"
               />
               <ButtonLink href="/blog" variant="ghost">
                 更多资讯 →
@@ -117,13 +117,13 @@ export default async function HomePage() {
         <Container>
           <div className="border border-mist-100/10 bg-white px-8 py-14 text-center sm:px-16">
             <h2 className="font-display text-2xl font-bold text-mist-100 sm:text-3xl">
-              准备好开启你的直播事业了吗？
+              准备好经营你的内容品牌了吗？
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-mist-300">
-              加入青意传媒，让专业团队陪你一起成长，把热爱变成事业。
+              加入青意传媒，用专业运营把创意、人设与平台分发接成一条可复利的成长路径。
             </p>
             <div className="mt-8 flex justify-center">
-              <ButtonLink href="/join">立即加入公会</ButtonLink>
+              <ButtonLink href="/join">申请加入</ButtonLink>
             </div>
           </div>
         </Container>

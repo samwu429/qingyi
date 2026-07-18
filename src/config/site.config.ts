@@ -13,9 +13,12 @@ export const siteConfig = {
   companyLegalName: "青意贸易（福建福清市）有限公司",
   brandName: "青意传媒",
   brandNameEn: "Qingyi Media",
-  tagline: "专业主播孵化 · 内容运营 · 全域直播生态",
+  // Positioning drawn from creative-industries + platform vocabulary: talent,
+  // content IP, algorithmic visibility, and monetisation — without lecture jargon.
+  // 定位吸收创意产业与平台研究用语：创作者、内容 IP、算法可见性与变现，避免课堂腔。
+  tagline: "创意内容产业 · 主播孵化 · 平台分发与变现",
   description:
-    "青意传媒是专注于主播孵化与直播内容运营的传媒公会，提供签约、培训、流量扶持与商业变现的一站式服务。",
+    "青意传媒是面向直播与短视频的创意内容公会，专注创作者孵化、人设与内容 IP 打磨、算法可见性运营，以及可持续的商业变现闭环。",
   contact: {
     address: "福建省福清市音西街道",
     email: "contact@qingyimedia.cn",

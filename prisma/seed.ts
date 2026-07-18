@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { siteContentRegistry } from "../src/domain/site/site-content.types";
 
 // Idempotent database seed. Provisions the initial administrator from private
 // environment references and, when the roster and blog are empty, adds sample
@@ -113,10 +114,11 @@ async function seedPosts(): Promise<void> {
     data: [
       {
         slug: "qingyi-media-launch",
-        title: "青意传媒正式启航：与每一位主播共同成长",
-        excerpt: "我们相信内容的力量，也相信每一位创作者的潜力。",
+        title: "青意传媒启航：做创意内容产业里的创作者陪跑",
+        excerpt:
+          "从人设真实感、算法可见性到内容 IP 变现，我们把直播公会做成可执行的内容产业陪跑。",
         content:
-          "## 我们为何出发\n\n青意传媒成立于福建福清，专注主播孵化与直播内容运营。\n\n我们提供从人设定位、内容策划到流量投放的一站式服务，帮助主播把热爱变成事业。\n\n## 我们能提供什么\n\n- 专业的运营与中控团队\n- 多平台资源对接\n- 透明的分成与保底机制\n\n欢迎加入我们，一起点亮属于你的高光时刻。",
+          "## 我们如何定位\n\n青意传媒面向直播与短视频的创意内容产业，服务创作者孵化、平台分发与商业变现。\n\n平台与技术只是分发层；真正决定结果的，是人设与内容策略、运营组织与可持续变现。\n\n## 我们提供什么\n\n- 人设与真实感运营培训\n- 算法可见性与排播复盘\n- 内容 IP 合作与透明分成\n\n欢迎加入，把个人创意做成可复利的内容事业。",
         author: "青意传媒编辑部",
         tags: ["公告", "公会动态"],
         status: "PUBLISHED",
@@ -124,12 +126,13 @@ async function seedPosts(): Promise<void> {
       },
       {
         slug: "streamer-growth-guide",
-        title: "新人主播成长指南：从零到稳定开播的五个阶段",
-        excerpt: "起号难？我们把主播成长拆解为清晰可执行的五个阶段。",
+        title: "创作者成长路径：从定位到变现的五个阶段",
+        excerpt:
+          "把开播拆成可执行阶段：人设定位、内容打磨、算法可见性、粉丝黏性与商业闭环。",
         content:
-          "## 阶段一：定位\n\n明确你的内容方向与人设标签。\n\n## 阶段二：内容打磨\n\n固定开播时间，持续优化话术与节奏。\n\n## 阶段三：流量起量\n\n结合平台活动与站内推荐，稳步扩大曝光。\n\n## 阶段四：粉丝沉淀\n\n通过社群与互动增强粉丝黏性。\n\n## 阶段五：商业变现\n\n对接广告、电商与打赏，构建稳定收入结构。",
+          "## 阶段一：人设定位\n\n明确内容赛道与可识别的人设标签，避免「什么都播、谁都不记得」。\n\n## 阶段二：内容打磨\n\n固定排播，迭代话术、节奏与镜头真实感。\n\n## 阶段三：算法可见性\n\n结合平台活动与推荐逻辑，做曝光与留存的数据复盘。\n\n## 阶段四：粉丝黏性\n\n把互动经营成持续陪伴关系，沉淀社群与回访。\n\n## 阶段五：内容 IP 变现\n\n对接打赏、品牌与电商，形成可复用的收入结构。",
         author: "青意传媒运营团队",
-        tags: ["主播故事", "运营干货"],
+        tags: ["运营复盘", "创作者成长"],
         status: "PUBLISHED",
         publishedAt: new Date(now.getTime() - 86_400_000),
       },
@@ -274,10 +277,55 @@ async function clearLegacyDiskUploads(): Promise<void> {
   }
 }
 
+// Push professional site copy into SiteSetting so redeploys refresh public
+// pages even when older admin JSON is already stored.
+// 把专业站点文案写入 SiteSetting，即使后台已有旧 JSON，重新部署也能刷新前台。
+async function syncSiteContentCopy(): Promise<void> {
+  for (const key of Object.keys(siteContentRegistry) as Array<
+    keyof typeof siteContentRegistry
+  >) {
+    const value = siteContentRegistry[key].default;
+    await prisma.siteSetting.upsert({
+      where: { key },
+      create: { key, value: value as unknown as Prisma.InputJsonValue },
+      update: { value: value as unknown as Prisma.InputJsonValue },
+    });
+  }
+  console.info("Synced professional site content copy.");
+}
+
+async function refreshSamplePostsCopy(): Promise<void> {
+  await prisma.blogPost.updateMany({
+    where: { slug: "qingyi-media-launch" },
+    data: {
+      title: "青意传媒启航：做创意内容产业里的创作者陪跑",
+      excerpt:
+        "从人设真实感、算法可见性到内容 IP 变现，我们把直播公会做成可执行的内容产业陪跑。",
+      content:
+        "## 我们如何定位\n\n青意传媒面向直播与短视频的创意内容产业，服务创作者孵化、平台分发与商业变现。\n\n平台与技术只是分发层；真正决定结果的，是人设与内容策略、运营组织与可持续变现。\n\n## 我们提供什么\n\n- 人设与真实感运营培训\n- 算法可见性与排播复盘\n- 内容 IP 合作与透明分成\n\n欢迎加入，把个人创意做成可复利的内容事业。",
+      tags: ["公告", "公会动态"],
+    },
+  });
+
+  await prisma.blogPost.updateMany({
+    where: { slug: "streamer-growth-guide" },
+    data: {
+      title: "创作者成长路径：从定位到变现的五个阶段",
+      excerpt:
+        "把开播拆成可执行阶段：人设定位、内容打磨、算法可见性、粉丝黏性与商业闭环。",
+      content:
+        "## 阶段一：人设定位\n\n明确内容赛道与可识别的人设标签，避免「什么都播、谁都不记得」。\n\n## 阶段二：内容打磨\n\n固定排播，迭代话术、节奏与镜头真实感。\n\n## 阶段三：算法可见性\n\n结合平台活动与推荐逻辑，做曝光与留存的数据复盘。\n\n## 阶段四：粉丝黏性\n\n把互动经营成持续陪伴关系，沉淀社群与回访。\n\n## 阶段五：内容 IP 变现\n\n对接打赏、品牌与电商，形成可复用的收入结构。",
+      tags: ["运营复盘", "创作者成长"],
+    },
+  });
+}
+
 async function main(): Promise<void> {
   await seedAdmin();
   await seedStreamers();
   await seedPosts();
+  await refreshSamplePostsCopy();
+  await syncSiteContentCopy();
   await normalizeNonAsciiSlugs();
   await clearLegacyDiskUploads();
 }
