@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/*
+  Design tokens for the Qingyi Media brand. The palette centres on a deep teal
+  ("qing") accent over a dark, editorial background suited to a media guild.
+  青意传媒品牌设计令牌：以「青」（深青绿）为主强调色，搭配适合传媒公会的深色编辑风背景。
+*/
+@theme {
+  --color-ink-950: #05080a;
+  --color-ink-900: #0a0f12;
+  --color-ink-850: #0f1519;
+  --color-ink-800: #141c21;
+  --color-ink-700: #1c262c;
+  --color-ink-600: #2a373f;
+
+  --color-mist-100: #eef4f3;
+  --color-mist-200: #cddcda;
+  --color-mist-300: #9fb4b2;
+  --color-mist-400: #7c9391;
+
+  --color-jade-300: #6fe7c8;
+  --color-jade-400: #34d3aa;
+  --color-jade-500: #10b98f;
+  --color-jade-600: #0c9273;
+
+  --color-background: var(--color-ink-950);
+  --color-foreground: var(--color-mist-100);
+
+  --font-sans:
+    "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC",
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink-950);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  Ambient radial glow used behind hero and feature sections.
+  用于主视觉与特性区块背后的环境径向光晕。
+*/
+.surface-glow {
+  background-image:
+    radial-gradient(
+      60% 60% at 15% 0%,
+      rgba(16, 185, 143, 0.16) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 50% at 100% 20%,
+      rgba(52, 211, 170, 0.1) 0%,
+      transparent 55%
+    );
+}
+
+/*
+  Frosted card treatment reused across streamer and post cards.
+  主播卡片与文章卡片复用的磨砂玻璃质感。
+*/
+.card-surface {
+  background: linear-gradient(
+    160deg,
+    rgba(20, 28, 33, 0.9) 0%,
+    rgba(10, 15, 18, 0.9) 100%
+  );
+  border: 1px solid rgba(159, 180, 178, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+.card-surface:hover {
+  border-color: rgba(52, 211, 170, 0.45);
+}
+
+/*
+  Long-form article typography for rendered blog content.
+  博客正文渲染的长文排版样式。
+*/
+.prose-content {
+  line-height: 1.9;
+  color: var(--color-mist-200);
+}
+
+.prose-content h2 {
+  color: var(--color-mist-100);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+}
+
+.prose-content h3 {
+  color: var(--color-mist-100);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.prose-content p {
+  margin: 1rem 0;
+}
+
+.prose-content a {
+  color: var(--color-jade-400);
+  text-decoration: underline;
+}
+
+.prose-content ul,
+.prose-content ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style: revert;
+}
+
+.prose-content li {
+  margin: 0.4rem 0;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--color-jade-500);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--color-mist-300);
+}
+
+.prose-content img {
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  max-width: 100%;
+}

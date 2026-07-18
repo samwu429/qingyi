@@ -1,0 +1,92 @@
+// Prisma schema for the Qingyi Media platform.
+// Persists administrator credentials, signed streamers, blog content, and
+// editable site settings so that all public content is data-driven.
+// 青意传媒平台的 Prisma 数据模型：存储管理员凭证、签约主播、博客内容与可编辑站点设置，
+// 使前台内容完全由数据驱动。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Publication lifecycle shared by streamers and blog posts.
+// 主播与博客共用的发布生命周期状态。
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Administrator account authorised to manage all back-office content.
+// 拥有后台内容管理权限的管理员账户。
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// Signed streamer profile presented in the guild roster.
+// 公会主播名录中展示的签约主播档案。
+model Streamer {
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  name         String
+  tagline      String?
+  bio          String?
+  avatarUrl    String?
+  coverUrl     String?
+  platform     String?
+  platformUrl  String?
+  category     String?
+  tags         String[]          @default([])
+  followers    Int               @default(0)
+  socials      Json?
+  status       PublicationStatus @default(PUBLISHED)
+  featured     Boolean           @default(false)
+  sortOrder    Int               @default(0)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([status, featured])
+  @@index([sortOrder])
+  @@map("streamers")
+}
+
+// News and dynamic blog entry authored from the admin panel.
+// 由后台撰写的资讯与动态博客文章。
+model BlogPost {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  excerpt     String?
+  content     String
+  coverUrl    String?
+  author      String?
+  tags        String[]          @default([])
+  status      PublicationStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("blog_posts")
+}
+
+// Flexible key/value store for editable page copy such as hero text and stats.
+// 灵活的键值存储，用于可编辑的页面文案（如首页标语与统计数据）。
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}

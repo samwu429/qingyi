@@ -1,0 +1,47 @@
+# Render Blueprint for the Qingyi Media platform. Provisions a managed
+# PostgreSQL database and a Node web service running the Next.js application.
+# Database migrations and idempotent seeding run during the pre-deploy phase.
+# 青意传媒平台的 Render 蓝图：创建托管 PostgreSQL 数据库与运行 Next.js 应用的 Node Web 服务；
+# 数据库迁移与幂等种子在预部署阶段执行。
+
+databases:
+  - name: qingyi-db
+    databaseName: qingyi
+    plan: free
+    region: singapore
+
+services:
+  - type: web
+    name: qingyi-web
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npx prisma migrate deploy && npm run db:seed
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Injected from the managed database connection string.
+      # 由托管数据库连接串注入。
+      - key: DATABASE_URL
+        fromDatabase:
+          name: qingyi-db
+          property: connectionString
+      # Auto-generated signing secret for admin sessions.
+      # 自动生成的后台会话签名密钥。
+      - key: SESSION_SECRET
+        generateValue: true
+      # Initial admin credentials; set these in the Render dashboard.
+      # 初始管理员凭证；请在 Render 控制台中设置。
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Optional Cloudinary references for image uploads.
+      # 可选的 Cloudinary 图片上传引用。
+      - key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        sync: false
