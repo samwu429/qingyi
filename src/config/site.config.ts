@@ -22,9 +22,9 @@ export const siteConfig = {
     phone: "",
     wechat: "",
   },
-  // Copyright is jointly held by the company and the site author; personal site
-  // is the preferred contact channel for technical or ownership questions.
-  // 版权由公司与站点作者共同持有；技术或权属问题优先通过个人网站联系。
+  // Copyright is jointly held by the company and the site author; the personal
+  // site is the preferred channel for technical support and business enquiries.
+  // 版权由公司与站点作者共同持有；技术支持与商务咨询优先通过个人网站联系。
   copyright: {
     coOwner: "Yihang (Sam) Wu",
     personalSiteUrl: "https://topphi.com",

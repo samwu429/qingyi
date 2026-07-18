@@ -64,7 +64,7 @@ export function SiteFooter() {
         <Container className="flex flex-col gap-2 py-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {year} {siteConfig.companyLegalName} 与{" "}
-            {siteConfig.copyright.coOwner} 共同所有。有任何问题可在{" "}
+            {siteConfig.copyright.coOwner} 共同所有。技术支持与商务咨询请访问{" "}
             <a
               href={siteConfig.copyright.personalSiteUrl}
               target="_blank"
@@ -72,8 +72,8 @@ export function SiteFooter() {
               className="text-white/70 underline underline-offset-2 transition-colors hover:text-white"
             >
               {siteConfig.copyright.personalSiteLabel}
-            </a>{" "}
-            个人网站找到我。
+            </a>
+            。
           </p>
           <p>
             {siteConfig.brandName} · {siteConfig.tagline}
