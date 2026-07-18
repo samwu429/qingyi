@@ -11,8 +11,11 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function seedAdmin(): Promise<void> {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
+  // Trim env values so accidental spaces in the Render dashboard do not create a
+  // credential that never matches what the operator types at login.
+  // 去除首尾空格，避免 Render 控制台误粘贴空格导致登录永远对不上。
+  const username = process.env.ADMIN_USERNAME?.trim();
+  const password = process.env.ADMIN_PASSWORD?.trim();
 
   if (!username || !password) {
     console.warn(
@@ -21,13 +24,23 @@ async function seedAdmin(): Promise<void> {
     return;
   }
 
+  const passwordHash = await bcrypt.hash(password, 12);
   const existing = await prisma.adminUser.findUnique({ where: { username } });
+
+  // Upsert so redeploys (or a manual seed) re-sync the password to the current
+  // environment variables. Operators often change ADMIN_PASSWORD after the first
+  // deploy and expect the new value to work.
+  // 使用 upsert：重新部署或手动 seed 时，把密码同步为当前环境变量。
+  // 运营常在首次部署后修改 ADMIN_PASSWORD，并期望新密码立即生效。
   if (existing) {
-    console.info(`Admin user "${username}" already exists; leaving unchanged.`);
+    await prisma.adminUser.update({
+      where: { id: existing.id },
+      data: { passwordHash },
+    });
+    console.info(`Updated password for admin user "${username}".`);
     return;
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
   await prisma.adminUser.create({
     data: { username, passwordHash, displayName: "站点管理员" },
   });
