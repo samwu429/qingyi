@@ -92,7 +92,10 @@ export default async function JoinPage() {
           ) : null}
         </div>
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-2 lg:items-start">
+        <div
+          id="inquiry"
+          className="mt-16 grid scroll-mt-28 gap-8 lg:grid-cols-2 lg:items-start"
+        >
           <div className="border border-mist-100/10 bg-white p-8">
             <h2 className="font-display text-2xl font-bold text-mist-100">
               准备好加入了吗？

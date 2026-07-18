@@ -46,16 +46,14 @@ export function SiteFooter() {
             {siteConfig.contact.address ? (
               <li>{siteConfig.contact.address}</li>
             ) : null}
-            {siteConfig.contact.email ? (
-              <li>
-                <a
-                  href={`mailto:${siteConfig.contact.email}`}
-                  className="transition-colors hover:text-white"
-                >
-                  {siteConfig.contact.email}
-                </a>
-              </li>
-            ) : null}
+            <li>
+              <Link
+                href="/join#inquiry"
+                className="transition-colors hover:text-white"
+              >
+                在线留言
+              </Link>
+            </li>
           </ul>
         </div>
       </Container>
