@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import { Container } from "@/ui/components/primitives/container";
 import { PageHeader } from "@/ui/components/layout/page-header/page-header";
-import { ButtonLink } from "@/ui/components/primitives/button-link";
+import { JoinInquiryForm } from "@/ui/components/public/join/join-inquiry-form";
 import { siteContentService } from "@/domain/site/site-content.service";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "加入我们",
-  description: "了解青意传媒的主播扶持政策、签约要求与加入流程。",
+  description: "了解青意传媒的主播扶持政策、签约要求与加入流程，并在线留言报名。",
 };
 
-// Recruitment page presenting benefits, requirements, and the signing process.
-// 招募页：展示扶持政策、签约要求与加入流程。
+// Recruitment page presenting benefits, requirements, process, and a public
+// enquiry form so candidates can leave contact details for follow-up.
+// 招募页：展示扶持政策、签约要求、流程，以及可供候选人留言留下联系方式的表单。
 export default async function JoinPage() {
   const join = await siteContentService.get("join");
 
@@ -91,18 +92,19 @@ export default async function JoinPage() {
           ) : null}
         </div>
 
-        <div className="mt-16 border border-mist-100/10 bg-white p-10 text-center">
-          <h2 className="font-display text-2xl font-bold text-mist-100">
-            准备好加入了吗？
-          </h2>
-          {join.contactNote ? (
-            <p className="mx-auto mt-3 max-w-xl text-mist-300">
-              {join.contactNote}
+        <div className="mt-16 grid gap-8 lg:grid-cols-2 lg:items-start">
+          <div className="border border-mist-100/10 bg-white p-8">
+            <h2 className="font-display text-2xl font-bold text-mist-100">
+              准备好加入了吗？
+            </h2>
+            {join.contactNote ? (
+              <p className="mt-3 text-mist-300">{join.contactNote}</p>
+            ) : null}
+            <p className="mt-4 text-sm text-mist-400">
+              请在右侧填写姓名与联系方式，我们会尽快与你联系。
             </p>
-          ) : null}
-          <div className="mt-8 flex justify-center">
-            <ButtonLink href="/contact">联系我们报名</ButtonLink>
           </div>
+          <JoinInquiryForm />
         </div>
       </Container>
     </div>

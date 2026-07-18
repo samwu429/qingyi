@@ -42,3 +42,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local admin uploads (keep directory, ignore files)
+# 本地后台上传目录（保留文件夹，忽略文件）
+/public/uploads/*
+!/public/uploads/.gitkeep

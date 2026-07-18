@@ -90,3 +90,18 @@ model SiteSetting {
 
   @@map("site_settings")
 }
+
+// Recruitment / join-us enquiry submitted from the public site.
+// 前台「加入我们」页提交的招募留言。
+model JoinInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String
+  message   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isRead, createdAt])
+  @@map("join_inquiries")
+}

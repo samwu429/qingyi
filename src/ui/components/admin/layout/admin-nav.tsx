@@ -11,6 +11,7 @@ const navItems = [
   { label: "概览", href: "/admin", exact: true },
   { label: "主播管理", href: "/admin/streamers" },
   { label: "资讯管理", href: "/admin/posts" },
+  { label: "留言管理", href: "/admin/inquiries" },
   { label: "页面内容", href: "/admin/pages" },
 ];
 
