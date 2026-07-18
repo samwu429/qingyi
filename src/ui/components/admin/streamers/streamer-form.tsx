@@ -189,6 +189,9 @@ export function StreamerForm({
         <legend className="px-2 text-sm font-medium text-mist-200">
           社交平台链接
         </legend>
+        {fieldError("socials") ? (
+          <p className="mb-3 text-xs text-red-600">{fieldError("socials")}</p>
+        ) : null}
         <div className="space-y-3">
           {socials.map((social, index) => (
             <div key={index} className="flex flex-wrap gap-3">

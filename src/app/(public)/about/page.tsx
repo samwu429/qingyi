@@ -27,8 +27,8 @@ export default async function AboutPage() {
 
         {about.sections.length > 0 ? (
           <div className="mt-14 grid gap-px bg-mist-100/10 md:grid-cols-2">
-            {about.sections.map((section) => (
-              <div key={section.title} className="bg-white p-8">
+            {about.sections.map((section, index) => (
+              <div key={`${section.title}-${index}`} className="bg-white p-8">
                 <h2 className="font-display text-xl font-bold text-mist-100">
                   {section.title}
                 </h2>

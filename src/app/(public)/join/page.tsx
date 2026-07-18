@@ -32,8 +32,8 @@ export default async function JoinPage() {
               主播扶持
             </h2>
             <div className="mt-6 grid gap-px bg-mist-100/10 md:grid-cols-3">
-              {join.benefits.map((benefit) => (
-                <div key={benefit.title} className="bg-white p-7">
+              {join.benefits.map((benefit, index) => (
+                <div key={`${benefit.title}-${index}`} className="bg-white p-7">
                   <h3 className="font-display text-lg font-bold text-jade-500">
                     {benefit.title}
                   </h3>
@@ -53,9 +53,9 @@ export default async function JoinPage() {
                 签约要求
               </h2>
               <ul className="mt-6 space-y-3">
-                {join.requirements.map((requirement) => (
+                {join.requirements.map((requirement, index) => (
                   <li
-                    key={requirement}
+                    key={`${requirement}-${index}`}
                     className="flex items-start gap-3 text-mist-300"
                   >
                     <span className="mt-1.5 h-2 w-2 flex-shrink-0 bg-jade-500" />
@@ -73,7 +73,7 @@ export default async function JoinPage() {
               </h2>
               <ol className="mt-6 space-y-5">
                 {join.steps.map((step, index) => (
-                  <li key={step.title} className="flex gap-4">
+                  <li key={`${step.title}-${index}`} className="flex gap-4">
                     <span className="grid h-8 w-8 flex-shrink-0 place-items-center bg-jade-500 font-display text-sm font-bold text-white">
                       {index + 1}
                     </span>

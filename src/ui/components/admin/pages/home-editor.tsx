@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Field, TextArea, TextInput } from "@/ui/components/admin/form/fields";
+import { ImageUrlField } from "@/ui/components/admin/media/image-url-field";
 import { RepeatableList } from "@/ui/components/admin/pages/repeatable-list";
 import { SaveBar } from "@/ui/components/admin/pages/save-bar";
 import { initialActionResult } from "@/app/admin/_actions/action-result";
@@ -82,14 +83,11 @@ export function HomeEditor({
             />
           </Field>
         </div>
-        <Field label="主视觉图片地址" htmlFor="heroImageUrl">
-          <TextInput
-            id="heroImageUrl"
-            value={content.heroImageUrl}
-            onChange={(e) => set("heroImageUrl", e.target.value)}
-            placeholder="https://"
-          />
-        </Field>
+        <ImageUrlField
+          label="主视觉图片"
+          value={content.heroImageUrl}
+          onUrlChange={(url) => set("heroImageUrl", url)}
+        />
       </section>
 
       <section className="space-y-4">

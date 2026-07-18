@@ -3,6 +3,7 @@
 import { joinInquiryInputSchema } from "@/domain/inquiries/inquiry.schema";
 import { inquiryService } from "@/domain/inquiries/inquiry.service";
 import {
+  summarizeFormErrors,
   toFieldErrors,
   type ActionResult,
 } from "@/app/admin/_actions/action-result";
@@ -20,9 +21,10 @@ export async function submitJoinInquiryAction(
     message: formData.get("message"),
   });
   if (!parsed.success) {
+    const fieldErrors = toFieldErrors(parsed.error.issues);
     return {
-      error: "请检查表单填写",
-      fieldErrors: toFieldErrors(parsed.error.issues),
+      error: summarizeFormErrors(fieldErrors),
+      fieldErrors,
     };
   }
 

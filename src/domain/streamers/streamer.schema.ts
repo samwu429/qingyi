@@ -1,26 +1,21 @@
 import { z } from "zod";
 import { optionalUrlSchema } from "@/domain/shared/url.schema";
+import { optionalAsciiSlugSchema } from "@/domain/shared/slug.schema";
 
 // Validation contract for streamer create/update operations. Applied at the
 // trust boundary (server actions) before any persistence occurs.
 // 主播创建/更新操作的校验契约，在信任边界（服务端 action）持久化之前应用。
 
 const socialLinkSchema = z.object({
-  label: z.string().trim().min(1).max(30),
-  url: z.url("请填写有效的社交链接"),
+  label: z.string().trim().min(1, "请填写社交平台名称").max(30),
+  url: z.url("请填写有效的社交链接（需以 https:// 开头）"),
 });
 
 export const streamerStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 
 export const streamerInputSchema = z.object({
   name: z.string().trim().min(1, "请填写主播名称").max(60),
-  slug: z
-    .string()
-    .trim()
-    .max(80)
-    .regex(/^[a-z0-9-]*$/, "Slug 只能含英文、数字和连字符")
-    .optional()
-    .or(z.literal("")),
+  slug: optionalAsciiSlugSchema(80),
   tagline: z.string().trim().max(120).optional().or(z.literal("")),
   bio: z.string().trim().max(4000).optional().or(z.literal("")),
   avatarUrl: optionalUrlSchema,
@@ -29,11 +24,17 @@ export const streamerInputSchema = z.object({
   platformUrl: optionalUrlSchema,
   category: z.string().trim().max(40).optional().or(z.literal("")),
   tags: z.array(z.string().trim().min(1).max(24)).max(12).default([]),
-  followers: z.coerce.number().int().min(0).max(1_000_000_000).default(0),
+  followers: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? 0 : value),
+    z.coerce.number().int().min(0).max(1_000_000_000),
+  ),
   socials: z.array(socialLinkSchema).max(8).default([]),
   status: z.enum(streamerStatusValues).default("PUBLISHED"),
   featured: z.coerce.boolean().default(false),
-  sortOrder: z.coerce.number().int().min(0).max(100000).default(0),
+  sortOrder: z.preprocess(
+    (value) => (value === "" || value === null || value === undefined ? 0 : value),
+    z.coerce.number().int().min(0).max(100000),
+  ),
 });
 
 export type StreamerInput = z.infer<typeof streamerInputSchema>;

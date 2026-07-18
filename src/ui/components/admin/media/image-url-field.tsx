@@ -6,26 +6,40 @@ import { RemoteImage } from "@/ui/components/media/remote-image";
 import { cn } from "@/lib/ui/cn";
 
 // Image field with URL entry plus drag-and-drop / local file picking. Uploads go
-// through the authenticated admin media API so images work without requiring a
-// separate Cloudinary setup (Cloudinary is used automatically when configured).
-// 图片字段：支持填写链接，以及拖拽 / 本地选择上传。上传经已认证后台媒体接口，
-// 无需单独配置 Cloudinary 即可使用（若已配置则自动走 Cloudinary）。
+// through the authenticated admin media API. Supports either a named form field
+// (streamer/post forms) or a controlled callback (JSON payload editors).
+// 图片字段：支持填写链接，以及拖拽 / 本地选择上传。上传经已认证后台媒体接口。
+// 既可用于带 name 的表单字段（主播/文章），也可用于受控回调（JSON 载荷编辑器）。
 export function ImageUrlField({
   label,
   name,
-  defaultValue,
+  defaultValue = "",
+  value: controlledValue,
+  onUrlChange,
   hint,
 }: {
   label: string;
-  name: string;
-  defaultValue: string;
+  name?: string;
+  defaultValue?: string;
+  value?: string;
+  onUrlChange?: (url: string) => void;
   hint?: string;
 }) {
-  const [value, setValue] = useState(defaultValue);
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+  const isControlled = controlledValue !== undefined;
+  const value = isControlled ? controlledValue : uncontrolledValue;
+  const setValue = (next: string) => {
+    if (!isControlled) {
+      setUncontrolledValue(next);
+    }
+    onUrlChange?.(next);
+  };
+
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fieldId = name ?? "image-url";
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -61,7 +75,7 @@ export function ImageUrlField({
   };
 
   return (
-    <Field label={label} htmlFor={name} hint={hint}>
+    <Field label={label} htmlFor={fieldId} hint={hint}>
       <div className="space-y-3">
         <div
           onDragEnter={(event) => {
@@ -117,7 +131,7 @@ export function ImageUrlField({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="flex-1 space-y-2">
             <TextInput
-              id={name}
+              id={fieldId}
               name={name}
               value={value}
               onChange={(event) => setValue(event.target.value)}

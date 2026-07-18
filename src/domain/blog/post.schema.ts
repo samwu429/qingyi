@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { optionalUrlSchema } from "@/domain/shared/url.schema";
+import { optionalAsciiSlugSchema } from "@/domain/shared/slug.schema";
 
 // Validation contract for blog post create/update operations, enforced at the
 // server-action trust boundary before persistence.
@@ -9,13 +10,7 @@ export const postStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 
 export const postInputSchema = z.object({
   title: z.string().trim().min(1, "请填写文章标题").max(150),
-  slug: z
-    .string()
-    .trim()
-    .max(180)
-    .regex(/^[a-z0-9-]*$/, "Slug 只能含英文、数字和连字符")
-    .optional()
-    .or(z.literal("")),
+  slug: optionalAsciiSlugSchema(180),
   excerpt: z.string().trim().max(300).optional().or(z.literal("")),
   content: z.string().trim().min(1, "请填写文章正文"),
   coverUrl: optionalUrlSchema,

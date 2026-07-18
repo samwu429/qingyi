@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 // Idempotent database seed. Provisions the initial administrator from private
@@ -219,11 +219,67 @@ async function normalizeNonAsciiSlugs(): Promise<void> {
   }
 }
 
+// Clear legacy disk upload paths that no longer resolve after Render redeploys.
+// Operators must re-upload; leaving broken /uploads URLs only shows broken images.
+// 清除 Render 重新部署后已失效的历史本地上传路径。运营需重新上传；
+// 保留失效的 /uploads 只会持续显示破图。
+function isLegacyDiskUpload(url: string | null | undefined): boolean {
+  return typeof url === "string" && url.startsWith("/uploads/");
+}
+
+async function clearLegacyDiskUploads(): Promise<void> {
+  const streamers = await prisma.streamer.findMany({
+    select: { id: true, avatarUrl: true, coverUrl: true },
+  });
+  for (const streamer of streamers) {
+    const data: { avatarUrl?: null; coverUrl?: null } = {};
+    if (isLegacyDiskUpload(streamer.avatarUrl)) {
+      data.avatarUrl = null;
+    }
+    if (isLegacyDiskUpload(streamer.coverUrl)) {
+      data.coverUrl = null;
+    }
+    if (Object.keys(data).length === 0) {
+      continue;
+    }
+    await prisma.streamer.update({ where: { id: streamer.id }, data });
+    console.info(`Cleared legacy upload URL on streamer ${streamer.id}`);
+  }
+
+  const posts = await prisma.blogPost.findMany({
+    select: { id: true, coverUrl: true },
+  });
+  for (const post of posts) {
+    if (!isLegacyDiskUpload(post.coverUrl)) {
+      continue;
+    }
+    await prisma.blogPost.update({
+      where: { id: post.id },
+      data: { coverUrl: null },
+    });
+    console.info(`Cleared legacy upload URL on post ${post.id}`);
+  }
+
+  const home = await prisma.siteSetting.findUnique({ where: { key: "home" } });
+  if (home && home.value && typeof home.value === "object" && !Array.isArray(home.value)) {
+    const value = { ...(home.value as Record<string, unknown>) };
+    if (isLegacyDiskUpload(value.heroImageUrl as string | undefined)) {
+      value.heroImageUrl = "";
+      await prisma.siteSetting.update({
+        where: { key: "home" },
+        data: { value: value as Prisma.InputJsonValue },
+      });
+      console.info("Cleared legacy heroImageUrl on home settings.");
+    }
+  }
+}
+
 async function main(): Promise<void> {
   await seedAdmin();
   await seedStreamers();
   await seedPosts();
   await normalizeNonAsciiSlugs();
+  await clearLegacyDiskUploads();
 }
 
 main()

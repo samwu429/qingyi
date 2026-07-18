@@ -36,7 +36,13 @@ export default async function ContactPage() {
       href: contact.phone ? `tel:${contact.phone}` : undefined,
     },
     { label: "微信", value: contact.wechat },
-    { label: "微博", value: contact.weibo, href: contact.weibo || undefined },
+    {
+      label: "微博",
+      value: contact.weibo,
+      // Only link when the value is a real URL; handles / nicknames stay text.
+      // 仅在值为真实 URL 时做成链接；微信号 / 昵称保持纯文本。
+      href: /^https?:\/\//i.test(contact.weibo) ? contact.weibo : undefined,
+    },
   ].filter((row) => Boolean(row.value));
 
   return (

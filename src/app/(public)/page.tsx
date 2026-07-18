@@ -27,8 +27,8 @@ export default async function HomePage() {
       {home.stats.length > 0 ? (
         <section className="border-y border-mist-100/10 bg-white">
           <Container className="grid grid-cols-2 gap-8 py-14 sm:grid-cols-4">
-            {home.stats.map((stat) => (
-              <div key={stat.label}>
+            {home.stats.map((stat, index) => (
+              <div key={`${stat.label}-${index}`}>
                 <p className="font-display text-3xl font-bold text-jade-500 sm:text-4xl">
                   {stat.value}
                 </p>
@@ -50,7 +50,7 @@ export default async function HomePage() {
             <div className="mt-12 grid gap-px bg-mist-100/10 md:grid-cols-3">
               {home.highlights.map((item, index) => (
                 <div
-                  key={item.title}
+                  key={`${item.title}-${index}`}
                   className="bg-ink-950 p-8 transition-colors hover:bg-white"
                 >
                   <p className="font-display text-sm text-jade-500">

@@ -10,20 +10,7 @@ import {
   toFieldErrors,
   type ActionResult,
 } from "@/app/admin/_actions/action-result";
-
-function parseTags(raw: FormDataEntryValue | null): string[] {
-  if (typeof raw !== "string") {
-    return [];
-  }
-  return Array.from(
-    new Set(
-      raw
-        .split(/[,\n]/)
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-    ),
-  );
-}
+import { parseTagList } from "@/lib/text/tags";
 
 function buildInput(formData: FormData) {
   return postInputSchema.safeParse({
@@ -33,17 +20,24 @@ function buildInput(formData: FormData) {
     content: formData.get("content"),
     coverUrl: formData.get("coverUrl"),
     author: formData.get("author"),
-    tags: parseTags(formData.get("tags")),
+    tags: parseTagList(
+      typeof formData.get("tags") === "string"
+        ? (formData.get("tags") as string)
+        : "",
+    ),
     status: formData.get("status") ?? "DRAFT",
   });
 }
 
 // Revalidate every surface that reflects blog content after a mutation.
 // 变更后重新验证所有展示博客内容的页面。
-function revalidateBlogSurfaces() {
+function revalidateBlogSurfaces(slug?: string) {
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
   revalidatePath("/");
+  if (slug) {
+    revalidatePath(`/blog/${slug}`);
+  }
 }
 
 export async function createPostAction(
@@ -60,8 +54,8 @@ export async function createPostAction(
     };
   }
 
-  await postService.create(parsed.data);
-  revalidateBlogSurfaces();
+  const created = await postService.create(parsed.data);
+  revalidateBlogSurfaces(created.slug);
   redirect("/admin/posts");
 }
 
@@ -80,8 +74,8 @@ export async function updatePostAction(
     };
   }
 
-  await postService.update(id, parsed.data);
-  revalidateBlogSurfaces();
+  const updated = await postService.update(id, parsed.data);
+  revalidateBlogSurfaces(updated.slug);
   redirect("/admin/posts");
 }
 

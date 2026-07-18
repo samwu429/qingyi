@@ -2,8 +2,59 @@ import type { Prisma } from "@prisma/client";
 import { siteSettingRepository } from "@/infrastructure/database/repositories/site-setting.repository";
 import {
   siteContentRegistry,
+  type AboutContent,
+  type HomeContent,
+  type JoinContent,
   type SiteContentKey,
 } from "@/domain/site/site-content.types";
+
+// Drop blank repeatable rows so an accidental "add" in the admin editors does
+// not persist empty cards or create duplicate React keys on the public site.
+// 丢弃空白的可重复行，避免后台误点「添加」后把空卡片持久化，
+// 或在前台产生重复 React key。
+function sanitizeContent<K extends SiteContentKey>(
+  key: K,
+  value: (typeof siteContentRegistry)[K]["default"],
+): (typeof siteContentRegistry)[K]["default"] {
+  if (key === "home") {
+    const home = value as HomeContent;
+    return {
+      ...home,
+      stats: home.stats.filter(
+        (item) => item.label.trim() || item.value.trim(),
+      ),
+      highlights: home.highlights.filter(
+        (item) => item.title.trim() || item.description.trim(),
+      ),
+    } as (typeof siteContentRegistry)[K]["default"];
+  }
+
+  if (key === "about") {
+    const about = value as AboutContent;
+    return {
+      ...about,
+      sections: about.sections.filter(
+        (item) => item.title.trim() || item.body.trim(),
+      ),
+    } as (typeof siteContentRegistry)[K]["default"];
+  }
+
+  if (key === "join") {
+    const join = value as JoinContent;
+    return {
+      ...join,
+      benefits: join.benefits.filter(
+        (item) => item.title.trim() || item.description.trim(),
+      ),
+      requirements: join.requirements.filter((item) => item.trim()),
+      steps: join.steps.filter(
+        (item) => item.title.trim() || item.description.trim(),
+      ),
+    } as (typeof siteContentRegistry)[K]["default"];
+  }
+
+  return value;
+}
 
 // Read/write editable page content. Reads merge stored overrides on top of the
 // typed defaults and re-validate, so malformed or partial records degrade
@@ -25,9 +76,10 @@ export const siteContentService = {
       ...(stored.value as Record<string, unknown>),
     };
     const parsed = entry.schema.safeParse(merged);
-    return (
+    const value = (
       parsed.success ? parsed.data : entry.default
     ) as (typeof siteContentRegistry)[K]["default"];
+    return sanitizeContent(key, value);
   },
 
   async save<K extends SiteContentKey>(
@@ -35,7 +87,7 @@ export const siteContentService = {
     value: (typeof siteContentRegistry)[K]["default"],
   ): Promise<void> {
     const entry = siteContentRegistry[key];
-    const validated = entry.schema.parse(value);
+    const validated = entry.schema.parse(sanitizeContent(key, value));
     await siteSettingRepository.upsert(
       key,
       validated as unknown as Prisma.InputJsonValue,
