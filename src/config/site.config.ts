@@ -22,6 +22,14 @@ export const siteConfig = {
     phone: "",
     wechat: "",
   },
+  // Copyright is jointly held by the company and the site author; personal site
+  // is the preferred contact channel for technical or ownership questions.
+  // 版权由公司与站点作者共同持有；技术或权属问题优先通过个人网站联系。
+  copyright: {
+    coOwner: "Yihang (Sam) Wu",
+    personalSiteUrl: "https://topphi.com",
+    personalSiteLabel: "topphi.com",
+  },
   // Primary navigation shared across every public page.
   // 公共页面共享的主导航。
   primaryNavigation: [
