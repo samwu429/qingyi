@@ -18,7 +18,7 @@ export function PageHeader({
     <section className="surface-glow border-b border-mist-100/10">
       <Container className="py-16 sm:py-20">
         {eyebrow ? (
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-jade-500">
+          <p className="mb-3 text-xs font-medium uppercase tracking-[0.16em] text-jade-500">
             {eyebrow}
           </p>
         ) : null}

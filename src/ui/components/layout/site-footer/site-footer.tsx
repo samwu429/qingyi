@@ -12,7 +12,7 @@ export function SiteFooter() {
       <Container className="grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-black text-white">
+            <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-bold text-white">
               青
             </span>
             <span className="font-display text-base font-bold">

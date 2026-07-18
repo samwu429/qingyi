@@ -20,14 +20,14 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-mist-100/10 bg-white/85 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-3" aria-label="返回首页">
-          <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-black text-white">
+          <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-bold text-white">
             青
           </span>
           <span className="flex flex-col leading-tight">
             <span className="font-display text-base font-bold text-mist-100">
               {siteConfig.brandName}
             </span>
-            <span className="text-[10px] uppercase tracking-[0.28em] text-mist-400">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-mist-400">
               {siteConfig.brandNameEn}
             </span>
           </span>
