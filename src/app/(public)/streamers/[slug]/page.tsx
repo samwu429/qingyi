@@ -57,19 +57,19 @@ export default async function StreamerDetailPage({
 
   return (
     <div>
-      <div className="relative h-56 w-full overflow-hidden sm:h-72">
+      <div className="relative h-56 w-full overflow-hidden border-b border-mist-100/10 sm:h-72">
         <RemoteImage
           src={streamer.coverUrl}
           alt={`${streamer.name} 封面`}
           className="h-full w-full object-cover"
           fallbackLabel="青意传媒"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-transparent" />
       </div>
 
       <Container className="-mt-20 pb-20">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
-          <div className="h-32 w-32 overflow-hidden rounded-2xl border-4 border-ink-950 shadow-xl">
+          <div className="h-32 w-32 overflow-hidden border-4 border-ink-950 bg-white">
             <RemoteImage
               src={streamer.avatarUrl}
               alt={streamer.name}
@@ -78,7 +78,7 @@ export default async function StreamerDetailPage({
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-black text-mist-100">
+              <h1 className="font-display text-3xl font-bold text-mist-100">
                 {streamer.name}
               </h1>
               {streamer.featured ? <Badge tone="jade">推荐主播</Badge> : null}
@@ -92,7 +92,7 @@ export default async function StreamerDetailPage({
               {streamer.followers > 0 ? (
                 <span>
                   粉丝：
-                  <span className="font-semibold text-jade-300">
+                  <span className="font-semibold text-jade-500">
                     {formatFollowers(streamer.followers)}
                   </span>
                 </span>
@@ -114,7 +114,9 @@ export default async function StreamerDetailPage({
 
         {streamer.bio ? (
           <div className="mt-10 max-w-3xl">
-            <h2 className="text-xl font-bold text-mist-100">主播简介</h2>
+            <h2 className="font-display text-xl font-bold text-mist-100">
+              主播简介
+            </h2>
             <div className="prose-content mt-4 whitespace-pre-wrap">
               {streamer.bio}
             </div>
@@ -123,7 +125,9 @@ export default async function StreamerDetailPage({
 
         {socials.length > 0 ? (
           <div className="mt-10">
-            <h2 className="text-xl font-bold text-mist-100">社交平台</h2>
+            <h2 className="font-display text-xl font-bold text-mist-100">
+              社交平台
+            </h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {socials.map((social) => (
                 <a
@@ -131,7 +135,7 @@ export default async function StreamerDetailPage({
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full border border-mist-300/15 px-5 py-2 text-sm text-mist-200 transition-colors hover:border-jade-400 hover:text-jade-300"
+                  className="border border-mist-100/15 bg-white px-5 py-2 text-sm text-mist-200 transition-colors hover:border-jade-500 hover:text-jade-500"
                 >
                   {social.label}
                 </a>
@@ -143,7 +147,7 @@ export default async function StreamerDetailPage({
         <div className="mt-14">
           <Link
             href="/streamers"
-            className="text-sm text-mist-400 transition-colors hover:text-jade-300"
+            className="text-sm text-mist-400 transition-colors hover:text-jade-500"
           >
             ← 返回主播列表
           </Link>

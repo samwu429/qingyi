@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/ui/cn";
 
-// Small pill label used for tags, categories, and status markers.
-// 用于标签、分类与状态标记的小型胶囊标签。
+// Square tag label used for categories and metadata—never a pill.
+// 分类与元数据用的直角标签，不做胶囊形。
 export function Badge({
   children,
   tone = "neutral",
@@ -14,12 +14,12 @@ export function Badge({
 }) {
   const toneClass =
     tone === "jade"
-      ? "border-jade-500/40 bg-jade-500/10 text-jade-300"
-      : "border-mist-300/15 bg-ink-700/60 text-mist-300";
+      ? "border-jade-500/40 bg-jade-500/10 text-jade-600"
+      : "border-mist-100/12 bg-ink-850 text-mist-300";
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide",
+        "inline-flex items-center border px-2.5 py-1 text-[11px] font-medium tracking-wide",
         toneClass,
         className,
       )}

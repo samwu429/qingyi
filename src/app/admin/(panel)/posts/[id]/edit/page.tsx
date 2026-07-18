@@ -28,7 +28,7 @@ export default async function EditPostPage({
     <div>
       <BackLink href="/admin/posts">← 返回资讯列表</BackLink>
       <AdminPageHeader title={`编辑资讯 · ${post.title}`} />
-      <div className="rounded-2xl border border-mist-300/10 bg-ink-900 p-6 sm:p-8">
+      <div className="border border-mist-100/10 bg-white p-6 sm:p-8">
         <PostForm action={boundAction} post={post} />
       </div>
     </div>

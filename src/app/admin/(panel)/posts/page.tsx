@@ -27,13 +27,13 @@ export default async function AdminPostsPage() {
       />
 
       {posts.length === 0 ? (
-        <p className="rounded-2xl border border-mist-300/10 bg-ink-900 p-10 text-center text-mist-400">
+        <p className="border border-mist-100/10 bg-white p-10 text-center text-mist-400">
           还没有资讯，点击右上角发布第一篇。
         </p>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-mist-300/10">
+        <div className="overflow-hidden border border-mist-100/10 bg-white">
           <table className="w-full text-left text-sm">
-            <thead className="bg-ink-900 text-mist-400">
+            <thead className="bg-ink-850 text-mist-400">
               <tr>
                 <th className="px-5 py-3 font-medium">标题</th>
                 <th className="px-5 py-3 font-medium">状态</th>
@@ -45,7 +45,7 @@ export default async function AdminPostsPage() {
               {posts.map((post) => (
                 <tr
                   key={post.id}
-                  className="border-t border-mist-300/10 bg-ink-950"
+                  className="border-t border-mist-100/10 bg-white"
                 >
                   <td className="px-5 py-3 font-medium text-mist-100">
                     {post.title}
@@ -60,7 +60,7 @@ export default async function AdminPostsPage() {
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/admin/posts/${post.id}/edit`}
-                        className="text-jade-300 hover:underline"
+                        className="text-jade-500 hover:underline"
                       >
                         编辑
                       </Link>
@@ -68,7 +68,7 @@ export default async function AdminPostsPage() {
                         <input type="hidden" name="id" value={post.id} />
                         <ConfirmSubmit
                           confirmMessage={`确认删除资讯「${post.title}」？此操作不可撤销。`}
-                          className="text-red-300 hover:underline disabled:opacity-60"
+                          className="text-red-600 hover:underline disabled:opacity-60"
                         >
                           删除
                         </ConfirmSubmit>

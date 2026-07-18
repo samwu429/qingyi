@@ -7,9 +7,8 @@ import { siteConfig } from "@/config/site.config";
 import { Container } from "@/ui/components/primitives/container";
 import { cn } from "@/lib/ui/cn";
 
-// Public site header with brand mark and responsive navigation. The active route
-// is highlighted, and a collapsible menu serves small screens.
-// 公共站点页头：包含品牌标识与响应式导航。高亮当前路由，并为小屏提供可折叠菜单。
+// Public site header: brand mark leads, navigation stays quiet, CTA is square.
+// 公共页头：品牌标识主导，导航克制，行动按钮为直角。
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -18,17 +17,17 @@ export function SiteHeader() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-mist-300/10 bg-ink-950/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-mist-100/10 bg-white/85 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2" aria-label="返回首页">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-jade-500 text-lg font-black text-ink-950">
+        <Link href="/" className="flex items-center gap-3" aria-label="返回首页">
+          <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-black text-white">
             青
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="text-sm font-bold text-mist-100">
+            <span className="font-display text-base font-bold text-mist-100">
               {siteConfig.brandName}
             </span>
-            <span className="text-[10px] uppercase tracking-[0.25em] text-mist-400">
+            <span className="text-[10px] uppercase tracking-[0.28em] text-mist-400">
               {siteConfig.brandNameEn}
             </span>
           </span>
@@ -40,9 +39,9 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "px-3.5 py-2 text-sm font-medium transition-colors",
                 isActive(item.href)
-                  ? "bg-ink-800 text-jade-300"
+                  ? "bg-ink-850 text-jade-600"
                   : "text-mist-300 hover:text-mist-100",
               )}
             >
@@ -54,7 +53,7 @@ export function SiteHeader() {
         <div className="hidden md:block">
           <Link
             href="/join"
-            className="rounded-full bg-jade-500 px-5 py-2 text-sm font-semibold text-ink-950 transition-colors hover:bg-jade-400"
+            className="bg-jade-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600"
           >
             立即签约
           </Link>
@@ -63,7 +62,7 @@ export function SiteHeader() {
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="grid h-10 w-10 place-items-center rounded-lg border border-mist-300/15 text-mist-200 md:hidden"
+          className="grid h-10 w-10 place-items-center border border-mist-100/15 text-mist-200 md:hidden"
           aria-expanded={open}
           aria-label="切换导航菜单"
         >
@@ -72,7 +71,7 @@ export function SiteHeader() {
       </Container>
 
       {open ? (
-        <div className="border-t border-mist-300/10 bg-ink-900 md:hidden">
+        <div className="border-t border-mist-100/10 bg-white md:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {siteConfig.primaryNavigation.map((item) => (
               <Link
@@ -80,9 +79,9 @@ export function SiteHeader() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "rounded-lg px-4 py-3 text-sm font-medium",
+                  "px-4 py-3 text-sm font-medium",
                   isActive(item.href)
-                    ? "bg-ink-800 text-jade-300"
+                    ? "bg-ink-850 text-jade-600"
                     : "text-mist-300",
                 )}
               >

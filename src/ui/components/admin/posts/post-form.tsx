@@ -111,7 +111,7 @@ export function PostForm({
       </Field>
 
       {state.error ? (
-        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+        <p className="border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">
           {state.error}
         </p>
       ) : null}
@@ -119,7 +119,7 @@ export function PostForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-jade-500 px-6 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-jade-400 disabled:opacity-60"
+        className="bg-jade-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600 disabled:opacity-60"
       >
         {pending ? "保存中…" : "保存"}
       </button>

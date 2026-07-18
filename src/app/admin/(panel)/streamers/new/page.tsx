@@ -12,7 +12,7 @@ export default function NewStreamerPage() {
     <div>
       <BackLink href="/admin/streamers">← 返回主播列表</BackLink>
       <AdminPageHeader title="新增主播" />
-      <div className="rounded-2xl border border-mist-300/10 bg-ink-900 p-6 sm:p-8">
+      <div className="border border-mist-100/10 bg-white p-6 sm:p-8">
         <StreamerForm action={createStreamerAction} />
       </div>
     </div>

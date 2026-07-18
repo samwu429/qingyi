@@ -1,11 +1,8 @@
 import { cn } from "@/lib/ui/cn";
 
 // Render an administrator-supplied image URL, falling back to a branded
-// placeholder when no source is available. A plain img element is used
-// deliberately because sources are arbitrary external URLs entered in the admin
-// panel rather than a fixed, pre-configured set of hosts.
-// 渲染管理员提供的图片地址，缺失时回退到品牌占位符。此处刻意使用原生 img 元素，
-// 因为图片来源是后台录入的任意外部地址，而非固定预配置的主机集合。
+// placeholder when no source is available.
+// 渲染管理员提供的图片地址，缺失时回退到品牌占位符。
 export function RemoteImage({
   src,
   alt,
@@ -21,7 +18,7 @@ export function RemoteImage({
     return (
       <div
         className={cn(
-          "grid place-items-center bg-gradient-to-br from-ink-700 to-ink-850 text-2xl font-black text-jade-500/40",
+          "grid place-items-center bg-gradient-to-br from-ink-850 via-white to-jade-500/15 font-display text-3xl font-black text-jade-500/50",
           className,
         )}
         aria-label={alt}

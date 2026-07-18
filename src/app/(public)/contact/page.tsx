@@ -50,17 +50,17 @@ export default async function ContactPage() {
       <Container className="py-14">
         <div className="grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="overflow-hidden rounded-2xl border border-mist-300/10">
+            <div className="overflow-hidden border border-mist-100/10">
               {rows.map((row) => (
                 <div
                   key={row.label}
-                  className="flex flex-col gap-1 border-b border-mist-300/10 bg-ink-900 p-6 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-1 border-b border-mist-100/10 bg-white p-6 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span className="text-sm text-mist-400">{row.label}</span>
                   {row.href ? (
                     <a
                       href={row.href}
-                      className="font-medium text-jade-300 hover:underline"
+                      className="font-medium text-jade-500 hover:underline"
                     >
                       {row.value}
                     </a>
@@ -74,8 +74,8 @@ export default async function ContactPage() {
             </div>
           </div>
 
-          <aside className="rounded-2xl border border-mist-300/10 bg-ink-900 p-6">
-            <h2 className="text-lg font-bold text-mist-100">
+          <aside className="border border-mist-100/10 bg-white p-6">
+            <h2 className="font-display text-lg font-bold text-mist-100">
               {siteConfig.brandName}
             </h2>
             <p className="mt-2 text-sm text-mist-400">

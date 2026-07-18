@@ -43,7 +43,7 @@ export function Pagination({
       {page > 1 ? (
         <Link
           href={buildHref(page - 1)}
-          className="rounded-lg border border-mist-300/15 px-4 py-2 text-sm text-mist-200 hover:border-jade-400"
+          className="border border-mist-100/15 bg-white px-4 py-2 text-sm text-mist-200 hover:border-jade-500"
         >
           上一页
         </Link>
@@ -55,10 +55,10 @@ export function Pagination({
           href={buildHref(target)}
           aria-current={target === page ? "page" : undefined}
           className={cn(
-            "rounded-lg px-4 py-2 text-sm",
+            "px-4 py-2 text-sm",
             target === page
-              ? "bg-jade-500 font-semibold text-ink-950"
-              : "border border-mist-300/15 text-mist-200 hover:border-jade-400",
+              ? "bg-jade-500 font-semibold text-white"
+              : "border border-mist-100/15 bg-white text-mist-200 hover:border-jade-500",
           )}
         >
           {target}
@@ -68,7 +68,7 @@ export function Pagination({
       {page < totalPages ? (
         <Link
           href={buildHref(page + 1)}
-          className="rounded-lg border border-mist-300/15 px-4 py-2 text-sm text-mist-200 hover:border-jade-400"
+          className="border border-mist-100/15 bg-white px-4 py-2 text-sm text-mist-200 hover:border-jade-500"
         >
           下一页
         </Link>

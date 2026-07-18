@@ -26,10 +26,10 @@ export default async function AboutPage() {
         </p>
 
         {about.sections.length > 0 ? (
-          <div className="mt-14 grid gap-6 md:grid-cols-2">
+          <div className="mt-14 grid gap-px bg-mist-100/10 md:grid-cols-2">
             {about.sections.map((section) => (
-              <div key={section.title} className="card-surface rounded-2xl p-7">
-                <h2 className="text-xl font-bold text-mist-100">
+              <div key={section.title} className="bg-white p-8">
+                <h2 className="font-display text-xl font-bold text-mist-100">
                   {section.title}
                 </h2>
                 <p className="mt-3 whitespace-pre-wrap leading-relaxed text-mist-300">
@@ -40,8 +40,10 @@ export default async function AboutPage() {
           </div>
         ) : null}
 
-        <div className="mt-14 rounded-2xl border border-mist-300/10 bg-ink-900 p-8">
-          <h2 className="text-lg font-bold text-mist-100">公司信息</h2>
+        <div className="mt-14 border border-mist-100/10 bg-white p-8">
+          <h2 className="font-display text-lg font-bold text-mist-100">
+            公司信息
+          </h2>
           <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-mist-400">法定名称</dt>

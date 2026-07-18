@@ -182,7 +182,7 @@ export function StreamerForm({
         />
       </Field>
 
-      <fieldset className="rounded-xl border border-mist-300/10 p-5">
+      <fieldset className="border border-mist-100/10 p-5">
         <legend className="px-2 text-sm font-medium text-mist-200">
           社交平台链接
         </legend>
@@ -212,7 +212,7 @@ export function StreamerForm({
                 onClick={() =>
                   setSocials((rows) => rows.filter((_, i) => i !== index))
                 }
-                className="rounded-lg border border-mist-300/15 px-3 text-sm text-mist-300 hover:border-red-500/40 hover:text-red-300"
+                className="border border-mist-100/15 px-3 text-sm text-mist-300 hover:border-red-500/40 hover:text-red-600"
               >
                 删除
               </button>
@@ -224,7 +224,7 @@ export function StreamerForm({
           onClick={() =>
             setSocials((rows) => [...rows, { label: "", url: "" }])
           }
-          className="mt-3 rounded-lg border border-mist-300/15 px-4 py-2 text-sm text-mist-200 hover:border-jade-400"
+          className="mt-3 border border-mist-100/15 px-4 py-2 text-sm text-mist-200 hover:border-jade-500"
         >
           + 添加链接
         </button>
@@ -241,7 +241,7 @@ export function StreamerForm({
       </label>
 
       {state.error ? (
-        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+        <p className="border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">
           {state.error}
         </p>
       ) : null}
@@ -250,7 +250,7 @@ export function StreamerForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-jade-500 px-6 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-jade-400 disabled:opacity-60"
+          className="bg-jade-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600 disabled:opacity-60"
         >
           {pending ? "保存中…" : "保存"}
         </button>

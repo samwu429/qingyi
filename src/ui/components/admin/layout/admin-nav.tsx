@@ -27,10 +27,10 @@ export function AdminNav() {
           key={item.href}
           href={item.href}
           className={cn(
-            "block rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+            "block px-3 py-2.5 text-sm font-medium transition-colors",
             isActive(item.href, item.exact)
-              ? "bg-jade-500/10 text-jade-300"
-              : "text-mist-300 hover:bg-ink-800 hover:text-mist-100",
+              ? "bg-jade-500 text-white"
+              : "text-mist-300 hover:bg-ink-850 hover:text-mist-100",
           )}
         >
           {item.label}

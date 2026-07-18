@@ -31,7 +31,9 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-mist-100">内容概览</h1>
+        <h1 className="font-display text-2xl font-bold text-mist-100">
+          内容概览
+        </h1>
         <p className="mt-1 text-sm text-mist-400">
           在此管理主播、资讯与站点页面内容，所有变更即时生效。
         </p>
@@ -42,10 +44,10 @@ export default async function AdminDashboardPage() {
           <Link
             key={card.label}
             href={card.href}
-            className="card-surface rounded-2xl p-6 transition-transform hover:-translate-y-1"
+            className="card-surface p-6"
           >
             <p className="text-sm text-mist-400">{card.label}</p>
-            <p className="mt-2 text-4xl font-black text-jade-300">
+            <p className="mt-2 font-display text-4xl font-bold text-jade-500">
               {card.value}
             </p>
             <p className="mt-2 text-xs text-mist-400">{card.detail}</p>
@@ -66,7 +68,7 @@ function QuickAction({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="rounded-xl border border-mist-300/15 bg-ink-900 px-5 py-4 text-sm font-medium text-mist-200 transition-colors hover:border-jade-400 hover:text-jade-300"
+      className="border border-mist-100/15 bg-white px-5 py-4 text-sm font-medium text-mist-200 transition-colors hover:border-jade-500 hover:text-jade-500"
     >
       {label} →
     </Link>

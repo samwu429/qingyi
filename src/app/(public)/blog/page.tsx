@@ -37,16 +37,16 @@ export default async function BlogPage({
         {tag ? (
           <p className="mb-8 text-sm text-mist-400">
             正在筛选标签：
-            <span className="text-jade-300">#{tag}</span>
+            <span className="text-jade-500">#{tag}</span>
           </p>
         ) : null}
 
         {result.items.length === 0 ? (
-          <p className="rounded-2xl border border-mist-300/10 bg-ink-900 p-10 text-center text-mist-400">
+          <p className="border border-mist-100/10 bg-white p-10 text-center text-mist-400">
             暂无资讯内容，敬请期待。
           </p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {result.items.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}

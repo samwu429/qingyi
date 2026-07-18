@@ -58,11 +58,11 @@ export default async function StreamersPage({
         ) : null}
 
         {result.items.length === 0 ? (
-          <p className="rounded-2xl border border-mist-300/10 bg-ink-900 p-10 text-center text-mist-400">
+          <p className="border border-mist-100/10 bg-white p-10 text-center text-mist-400">
             暂无主播信息，敬请期待。
           </p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {result.items.map((streamer) => (
               <StreamerCard key={streamer.id} streamer={streamer} />
             ))}
@@ -93,10 +93,10 @@ function FilterChip({
     <Link
       href={href}
       className={cn(
-        "rounded-full border px-4 py-2 text-sm transition-colors",
+        "border px-4 py-2 text-sm transition-colors",
         active
-          ? "border-jade-400 bg-jade-500/10 text-jade-300"
-          : "border-mist-300/15 text-mist-300 hover:border-jade-400",
+          ? "border-jade-500 bg-jade-500 text-white"
+          : "border-mist-100/15 bg-white text-mist-300 hover:border-jade-500",
       )}
     >
       {children}

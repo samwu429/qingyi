@@ -67,7 +67,7 @@ export function ImageUrlField({
           />
           {uploadEnabled ? (
             <div className="flex items-center gap-3">
-              <label className="cursor-pointer rounded-lg border border-mist-300/15 px-4 py-2 text-xs text-mist-200 hover:border-jade-400">
+              <label className="cursor-pointer border border-mist-100/15 px-4 py-2 text-xs text-mist-200 hover:border-jade-500">
                 {uploading ? "上传中…" : "上传图片"}
                 <input
                   type="file"
@@ -83,13 +83,13 @@ export function ImageUrlField({
                 />
               </label>
               {uploadError ? (
-                <span className="text-xs text-red-300">{uploadError}</span>
+                <span className="text-xs text-red-600">{uploadError}</span>
               ) : null}
             </div>
           ) : null}
         </div>
 
-        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-mist-300/10">
+        <div className="h-20 w-20 flex-shrink-0 overflow-hidden border border-mist-100/10">
           <RemoteImage
             src={value}
             alt="预览"

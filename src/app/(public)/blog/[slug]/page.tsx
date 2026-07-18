@@ -46,7 +46,7 @@ export default async function BlogPostPage({
       <Container className="max-w-3xl py-14">
         <Link
           href="/blog"
-          className="text-sm text-mist-400 transition-colors hover:text-jade-300"
+          className="text-sm text-mist-400 transition-colors hover:text-jade-500"
         >
           ← 返回资讯列表
         </Link>
@@ -58,7 +58,7 @@ export default async function BlogPostPage({
             </time>
             {post.author ? <span>· {post.author}</span> : null}
           </div>
-          <h1 className="mt-4 text-3xl font-black leading-tight text-mist-100 sm:text-4xl">
+          <h1 className="mt-4 font-display text-3xl font-bold leading-tight text-mist-100 sm:text-4xl">
             {post.title}
           </h1>
           {post.excerpt ? (
@@ -67,7 +67,7 @@ export default async function BlogPostPage({
         </header>
 
         {post.coverUrl ? (
-          <div className="mt-8 overflow-hidden rounded-2xl border border-mist-300/10">
+          <div className="mt-8 overflow-hidden border border-mist-100/10">
             <RemoteImage
               src={post.coverUrl}
               alt={post.title}

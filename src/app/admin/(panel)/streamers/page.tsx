@@ -28,13 +28,13 @@ export default async function AdminStreamersPage() {
       />
 
       {streamers.length === 0 ? (
-        <p className="rounded-2xl border border-mist-300/10 bg-ink-900 p-10 text-center text-mist-400">
+        <p className="border border-mist-100/10 bg-white p-10 text-center text-mist-400">
           还没有主播，点击右上角新增第一位主播。
         </p>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-mist-300/10">
+        <div className="overflow-hidden border border-mist-100/10 bg-white">
           <table className="w-full text-left text-sm">
-            <thead className="bg-ink-900 text-mist-400">
+            <thead className="bg-ink-850 text-mist-400">
               <tr>
                 <th className="px-5 py-3 font-medium">名称</th>
                 <th className="px-5 py-3 font-medium">分类</th>
@@ -47,7 +47,7 @@ export default async function AdminStreamersPage() {
               {streamers.map((streamer) => (
                 <tr
                   key={streamer.id}
-                  className="border-t border-mist-300/10 bg-ink-950"
+                  className="border-t border-mist-100/10 bg-white"
                 >
                   <td className="px-5 py-3">
                     <span className="font-medium text-mist-100">
@@ -72,7 +72,7 @@ export default async function AdminStreamersPage() {
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/admin/streamers/${streamer.id}/edit`}
-                        className="text-jade-300 hover:underline"
+                        className="text-jade-500 hover:underline"
                       >
                         编辑
                       </Link>
@@ -80,7 +80,7 @@ export default async function AdminStreamersPage() {
                         <input type="hidden" name="id" value={streamer.id} />
                         <ConfirmSubmit
                           confirmMessage={`确认删除主播「${streamer.name}」？此操作不可撤销。`}
-                          className="text-red-300 hover:underline disabled:opacity-60"
+                          className="text-red-600 hover:underline disabled:opacity-60"
                         >
                           删除
                         </ConfirmSubmit>

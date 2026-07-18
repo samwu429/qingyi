@@ -11,7 +11,7 @@ import { cn } from "@/lib/ui/cn";
 // 后台面板共用的表单展示型基础组件。不含内部状态，可在服务端与客户端表单中复用。
 
 const controlClass =
-  "w-full rounded-lg border border-mist-300/15 bg-ink-950 px-4 py-2.5 text-sm text-mist-100 outline-none transition-colors placeholder:text-mist-400 focus:border-jade-400";
+  "w-full border border-mist-100/15 bg-white px-4 py-2.5 text-sm text-mist-100 outline-none transition-colors placeholder:text-mist-400 focus:border-jade-500";
 
 export function Field({
   label,

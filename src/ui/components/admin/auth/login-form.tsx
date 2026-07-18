@@ -37,7 +37,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       </Field>
 
       {state.error ? (
-        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+        <p className="border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">
           {state.error}
         </p>
       ) : null}
@@ -45,7 +45,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-jade-500 px-4 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-jade-400 disabled:opacity-60"
+        className="w-full bg-jade-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600 disabled:opacity-60"
       >
         {pending ? "登录中…" : "登录"}
       </button>

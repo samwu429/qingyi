@@ -1,35 +1,41 @@
 @import "tailwindcss";
 
 /*
-  Design tokens for the Qingyi Media brand. The palette centres on a deep teal
-  ("qing") accent over a dark, editorial background suited to a media guild.
-  青意传媒品牌设计令牌：以「青」（深青绿）为主强调色，搭配适合传媒公会的深色编辑风背景。
+  Light editorial system for Qingyi Media: cool paper ground, deep charcoal
+  type, and a saturated "qing" green accent. Corners stay square throughout.
+  青意传媒浅色编辑风：冷纸色底、深墨字色、饱和青绿强调；全局直角。
 */
 @theme {
-  --color-ink-950: #05080a;
-  --color-ink-900: #0a0f12;
-  --color-ink-850: #0f1519;
-  --color-ink-800: #141c21;
-  --color-ink-700: #1c262c;
-  --color-ink-600: #2a373f;
+  --color-ink-950: #f3f7f5;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #e9f0ed;
+  --color-ink-800: #dce7e2;
+  --color-ink-700: #c9d8d1;
+  --color-ink-600: #a8bfb6;
 
-  --color-mist-100: #eef4f3;
-  --color-mist-200: #cddcda;
-  --color-mist-300: #9fb4b2;
-  --color-mist-400: #7c9391;
+  --color-mist-100: #0f1f1b;
+  --color-mist-200: #1b2e29;
+  --color-mist-300: #3d524c;
+  --color-mist-400: #5f746d;
 
-  --color-jade-300: #6fe7c8;
-  --color-jade-400: #34d3aa;
-  --color-jade-500: #10b98f;
-  --color-jade-600: #0c9273;
+  --color-jade-300: #0a6b54;
+  --color-jade-400: #0b7a5f;
+  --color-jade-500: #0c8a6b;
+  --color-jade-600: #086b52;
 
   --color-background: var(--color-ink-950);
   --color-foreground: var(--color-mist-100);
 
-  --font-sans:
-    "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC",
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial,
-    sans-serif;
+  --font-sans: var(--font-body), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: var(--font-display), "Songti SC", "Noto Serif SC", serif;
+  --radius-none: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-full: 0;
 }
 
 html {
@@ -37,59 +43,156 @@ html {
 }
 
 body {
-  background-color: var(--color-ink-950);
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(
+      90% 70% at 0% 0%,
+      rgba(12, 138, 107, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      70% 50% at 100% 10%,
+      rgba(15, 31, 27, 0.04) 0%,
+      transparent 50%
+    ),
+    linear-gradient(180deg, #f7faf8 0%, #f3f7f5 40%, #eef4f1 100%);
+  background-attachment: fixed;
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: rgba(12, 138, 107, 0.18);
+  color: var(--color-mist-100);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
 /*
-  Ambient radial glow used behind hero and feature sections.
-  用于主视觉与特性区块背后的环境径向光晕。
+  Soft atmospheric wash for section backgrounds without neon glow.
+  区块背景的柔和环境色，避免霓虹光晕。
 */
 .surface-glow {
   background-image:
-    radial-gradient(
-      60% 60% at 15% 0%,
-      rgba(16, 185, 143, 0.16) 0%,
-      transparent 60%
+    linear-gradient(
+      120deg,
+      rgba(12, 138, 107, 0.07) 0%,
+      transparent 42%
     ),
-    radial-gradient(
-      50% 50% at 100% 20%,
-      rgba(52, 211, 170, 0.1) 0%,
-      transparent 55%
-    );
+    linear-gradient(0deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2));
 }
 
 /*
-  Frosted card treatment reused across streamer and post cards.
-  主播卡片与文章卡片复用的磨砂玻璃质感。
+  Interactive listing surface: square, bordered, no soft shadow stack.
+  列表交互面：直角、描边，不用多层阴影。
 */
 .card-surface {
-  background: linear-gradient(
-    160deg,
-    rgba(20, 28, 33, 0.9) 0%,
-    rgba(10, 15, 18, 0.9) 100%
-  );
-  border: 1px solid rgba(159, 180, 178, 0.12);
-  backdrop-filter: blur(6px);
+  background: #ffffff;
+  border: 1px solid rgba(15, 31, 27, 0.1);
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card-surface:hover {
-  border-color: rgba(52, 211, 170, 0.45);
+  border-color: rgba(12, 138, 107, 0.55);
+  background: #fbfdfc;
 }
 
 /*
-  Long-form article typography for rendered blog content.
-  博客正文渲染的长文排版样式。
+  Full-bleed hero plane with a geometric paper texture.
+  全幅主视觉平面，带几何纸纹。
 */
+.hero-plane {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      105deg,
+      rgba(243, 247, 245, 0.96) 0%,
+      rgba(243, 247, 245, 0.72) 42%,
+      rgba(12, 138, 107, 0.12) 100%
+    ),
+    radial-gradient(
+      circle at 80% 30%,
+      rgba(12, 138, 107, 0.18),
+      transparent 42%
+    );
+}
+
+.hero-plane::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(15, 31, 27, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 31, 27, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 35%, #000 100%);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes image-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.motion-rise {
+  animation: rise-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.motion-rise-delay {
+  animation: rise-in 700ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+.motion-fade {
+  animation: fade-in 900ms ease both;
+}
+
+.motion-image {
+  animation: image-reveal 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .prose-content {
   line-height: 1.9;
-  color: var(--color-mist-200);
+  color: var(--color-mist-300);
 }
 
 .prose-content h2 {
   color: var(--color-mist-100);
+  font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 700;
   margin: 2rem 0 1rem;
@@ -97,6 +200,7 @@ body {
 
 .prose-content h3 {
   color: var(--color-mist-100);
+  font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 600;
   margin: 1.5rem 0 0.75rem;
@@ -107,8 +211,9 @@ body {
 }
 
 .prose-content a {
-  color: var(--color-jade-400);
+  color: var(--color-jade-500);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .prose-content ul,
@@ -126,11 +231,11 @@ body {
   border-left: 3px solid var(--color-jade-500);
   padding-left: 1rem;
   margin: 1.5rem 0;
-  color: var(--color-mist-300);
+  color: var(--color-mist-400);
 }
 
 .prose-content img {
-  border-radius: 0.75rem;
+  border-radius: 0;
   margin: 1.5rem 0;
   max-width: 100%;
 }

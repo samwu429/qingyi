@@ -48,10 +48,10 @@ export default async function AdminPagesPage({
             key={tab.key}
             href={`/admin/pages?tab=${tab.key}`}
             className={cn(
-              "rounded-full border px-4 py-2 text-sm transition-colors",
+              "border px-4 py-2 text-sm transition-colors",
               tab.key === activeKey
-                ? "border-jade-400 bg-jade-500/10 text-jade-300"
-                : "border-mist-300/15 text-mist-300 hover:border-jade-400",
+                ? "border-jade-500 bg-jade-500 text-white"
+                : "border-mist-100/15 bg-white text-mist-300 hover:border-jade-500",
             )}
           >
             {tab.label}
@@ -59,7 +59,7 @@ export default async function AdminPagesPage({
         ))}
       </div>
 
-      <div className="rounded-2xl border border-mist-300/10 bg-ink-900 p-6 sm:p-8">
+      <div className="border border-mist-100/10 bg-white p-6 sm:p-8">
         <SectionEditor activeKey={activeKey} />
       </div>
     </div>
