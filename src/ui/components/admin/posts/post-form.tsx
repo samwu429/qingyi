@@ -46,8 +46,17 @@ export function PostForm({
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Slug（留空自动生成）" htmlFor="slug">
-          <TextInput id="slug" name="slug" defaultValue={post?.slug ?? ""} />
+        <Field
+          label="Slug（留空自动生成，仅英文/数字）"
+          htmlFor="slug"
+          hint="勿填中文，否则详情页可能打不开"
+        >
+          <TextInput
+            id="slug"
+            name="slug"
+            defaultValue={post?.slug ?? ""}
+            placeholder="例如 growth-guide"
+          />
         </Field>
         <Field label="作者" htmlFor="author">
           <TextInput

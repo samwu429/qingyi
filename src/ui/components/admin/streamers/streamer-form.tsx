@@ -73,14 +73,15 @@ export function StreamerForm({
           />
         </Field>
         <Field
-          label="Slug（留空自动生成）"
+          label="Slug（留空自动生成，仅英文/数字）"
           htmlFor="slug"
-          hint={fieldError("slug")}
+          hint={fieldError("slug") || "勿填中文，否则详情页可能打不开"}
         >
           <TextInput
             id="slug"
             name="slug"
             defaultValue={streamer?.slug ?? ""}
+            placeholder="例如 ws-phi"
           />
         </Field>
       </div>

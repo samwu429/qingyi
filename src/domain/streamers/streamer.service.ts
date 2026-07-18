@@ -9,7 +9,11 @@ import {
   type Paginated,
   type PaginationInput,
 } from "@/domain/shared/pagination";
-import { slugify, withUniqueSuffix } from "@/lib/text/slug";
+import {
+  normalizeSlugParam,
+  slugify,
+  withUniqueSuffix,
+} from "@/lib/text/slug";
 import type { StreamerInput } from "@/domain/streamers/streamer.schema";
 
 // Application services orchestrating streamer use cases. They own slug
@@ -104,13 +108,19 @@ export const streamerService = {
     return { total, published, featured };
   },
 
-  getPublishedBySlug(slug: string): Promise<Streamer | null> {
-    return streamerRepository.findBySlug(slug).then((streamer) => {
-      if (!streamer || streamer.status !== "PUBLISHED") {
-        return null;
+  async getPublishedBySlug(slug: string): Promise<Streamer | null> {
+    const normalized = normalizeSlugParam(slug);
+    const candidates = Array.from(
+      new Set([normalized, slug.trim(), encodeURIComponent(normalized)]),
+    );
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      const streamer = await streamerRepository.findBySlug(candidate);
+      if (streamer?.status === "PUBLISHED") {
+        return streamer;
       }
-      return streamer;
-    });
+    }
+    return null;
   },
 
   getById(id: string): Promise<Streamer | null> {

@@ -9,7 +9,11 @@ import {
   type Paginated,
   type PaginationInput,
 } from "@/domain/shared/pagination";
-import { slugify, withUniqueSuffix } from "@/lib/text/slug";
+import {
+  normalizeSlugParam,
+  slugify,
+  withUniqueSuffix,
+} from "@/lib/text/slug";
 import type { PostInput } from "@/domain/blog/post.schema";
 
 // Application services for the dynamic blog. They manage slug uniqueness and the
@@ -88,13 +92,19 @@ export const postService = {
     return { total, published };
   },
 
-  getPublishedBySlug(slug: string): Promise<BlogPost | null> {
-    return postRepository.findBySlug(slug).then((post) => {
-      if (!post || post.status !== "PUBLISHED") {
-        return null;
+  async getPublishedBySlug(slug: string): Promise<BlogPost | null> {
+    const normalized = normalizeSlugParam(slug);
+    const candidates = Array.from(
+      new Set([normalized, slug.trim(), encodeURIComponent(normalized)]),
+    );
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      const post = await postRepository.findBySlug(candidate);
+      if (post?.status === "PUBLISHED") {
+        return post;
       }
-      return post;
-    });
+    }
+    return null;
   },
 
   getById(id: string): Promise<BlogPost | null> {

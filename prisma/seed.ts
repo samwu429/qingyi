@@ -138,10 +138,92 @@ async function seedPosts(): Promise<void> {
   console.info("Seeded sample blog posts.");
 }
 
+// Rewrite legacy slugs that still contain Chinese (or other non-ASCII) so
+// public detail routes stop 404-ing under percent-encoded URLs.
+// 把仍含中文（或其他非 ASCII）的历史 slug 改写为 ASCII，避免前台详情在
+// 百分号编码 URL 下持续 404。
+function slugifyAscii(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function withSuffix(slug: string): string {
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return slug ? `${slug}-${suffix}` : suffix;
+}
+
+async function uniqueAsciiSlug(
+  desired: string,
+  exists: (slug: string) => Promise<boolean>,
+): Promise<string> {
+  const base = slugifyAscii(desired) || "item";
+  let candidate = base;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (!(await exists(candidate))) {
+      return candidate;
+    }
+    candidate = withSuffix(base);
+  }
+  return withSuffix(base);
+}
+
+async function normalizeNonAsciiSlugs(): Promise<void> {
+  const nonAscii = /[^\x00-\x7F]/;
+
+  const streamers = await prisma.streamer.findMany({
+    select: { id: true, slug: true, name: true },
+  });
+  for (const streamer of streamers) {
+    if (!nonAscii.test(streamer.slug)) {
+      continue;
+    }
+    const nextSlug = await uniqueAsciiSlug(
+      slugifyAscii(streamer.slug) || slugifyAscii(streamer.name) || "streamer",
+      async (slug) => {
+        const hit = await prisma.streamer.findUnique({ where: { slug } });
+        return Boolean(hit && hit.id !== streamer.id);
+      },
+    );
+    await prisma.streamer.update({
+      where: { id: streamer.id },
+      data: { slug: nextSlug },
+    });
+    console.info(`Normalized streamer slug: ${streamer.slug} → ${nextSlug}`);
+  }
+
+  const posts = await prisma.blogPost.findMany({
+    select: { id: true, slug: true, title: true },
+  });
+  for (const post of posts) {
+    if (!nonAscii.test(post.slug)) {
+      continue;
+    }
+    const nextSlug = await uniqueAsciiSlug(
+      slugifyAscii(post.slug) || slugifyAscii(post.title) || "post",
+      async (slug) => {
+        const hit = await prisma.blogPost.findUnique({ where: { slug } });
+        return Boolean(hit && hit.id !== post.id);
+      },
+    );
+    await prisma.blogPost.update({
+      where: { id: post.id },
+      data: { slug: nextSlug },
+    });
+    console.info(`Normalized post slug: ${post.slug} → ${nextSlug}`);
+  }
+}
+
 async function main(): Promise<void> {
   await seedAdmin();
   await seedStreamers();
   await seedPosts();
+  await normalizeNonAsciiSlugs();
 }
 
 main()
