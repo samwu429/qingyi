@@ -18,7 +18,7 @@ export function RemoteImage({
     return (
       <div
         className={cn(
-          "grid place-items-center bg-gradient-to-br from-ink-850 via-white to-jade-500/15 font-display text-3xl font-black text-jade-500/50",
+          "grid place-items-center bg-gradient-to-br from-ink-850 via-white to-jade-500/15 font-display text-2xl font-bold text-jade-500/35",
           className,
         )}
         aria-label={alt}

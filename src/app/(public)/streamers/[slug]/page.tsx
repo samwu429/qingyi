@@ -54,29 +54,40 @@ export default async function StreamerDetailPage({
   }
 
   const socials = parseSocials(streamer.socials);
+  const hasCover = Boolean(streamer.coverUrl);
 
   return (
     <div>
-      <div className="relative h-56 w-full overflow-hidden border-b border-mist-100/10 sm:h-72">
-        <RemoteImage
-          src={streamer.coverUrl}
-          alt={`${streamer.name} 封面`}
-          className="h-full w-full object-cover"
-          fallbackLabel="青意传媒"
+      {/* Cover is image-only. No branded text fallback here — that used to stack
+          under the profile block via negative margin and read as an overlap.
+          封面只放真实图片。不用品牌大字占位：原先配合负 margin 会与资料区叠在一起。 */}
+      {hasCover ? (
+        <div className="relative h-48 w-full overflow-hidden border-b border-mist-100/10 sm:h-64">
+          <RemoteImage
+            src={streamer.coverUrl}
+            alt={`${streamer.name} 封面`}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <div
+          className="h-16 w-full border-b border-mist-100/10 bg-gradient-to-r from-ink-850 via-white to-jade-500/10 sm:h-20"
+          aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-transparent" />
-      </div>
+      )}
 
-      <Container className="-mt-20 pb-20">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
-          <div className="h-32 w-32 overflow-hidden border-4 border-ink-950 bg-white">
+      <Container className="pb-20 pt-8">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <div className="h-28 w-28 shrink-0 overflow-hidden border border-mist-100/15 bg-ink-850 sm:h-32 sm:w-32">
             <RemoteImage
               src={streamer.avatarUrl}
               alt={streamer.name}
               className="h-full w-full object-cover"
+              fallbackLabel={streamer.name.slice(0, 1) || "青"}
             />
           </div>
-          <div className="flex-1">
+
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="font-display text-3xl font-bold text-mist-100">
                 {streamer.name}
@@ -86,7 +97,7 @@ export default async function StreamerDetailPage({
             {streamer.tagline ? (
               <p className="mt-2 text-mist-300">{streamer.tagline}</p>
             ) : null}
-            <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-mist-400">
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-mist-400">
               {streamer.category ? <span>分类：{streamer.category}</span> : null}
               {streamer.platform ? <span>平台：{streamer.platform}</span> : null}
               {streamer.followers > 0 ? (
@@ -99,8 +110,11 @@ export default async function StreamerDetailPage({
               ) : null}
             </div>
           </div>
+
           {streamer.platformUrl ? (
-            <ButtonLink href={streamer.platformUrl}>进入直播间</ButtonLink>
+            <ButtonLink href={streamer.platformUrl} className="shrink-0">
+              进入直播间
+            </ButtonLink>
           ) : null}
         </div>
 
