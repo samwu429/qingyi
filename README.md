@@ -59,21 +59,43 @@ npm run dev
 | `SESSION_SECRET` | 会话签名密钥（≥ 32 字符） |
 | `ADMIN_USERNAME` | 初始管理员用户名（仅 seed 使用） |
 | `ADMIN_PASSWORD` | 初始管理员密码（仅 seed 使用） |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | 可选，Cloudinary 云名称 |
+| `NEXT_PUBLIC_SITE_URL` | 站点公开地址，如 `https://qingyi.onrender.com` |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | 可选，Cloudinary 云名称（国内访问建议不配，改用站内上传） |
 | `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | 可选，Cloudinary 无签名上传预设 |
 
 真实值仅存放于本地 `.env`（已 gitignore）或 Render 密钥中，绝不提交到仓库。
 
 ## 部署到 Render / Deploy to Render
 
-仓库根目录已提供 `render.yaml` 蓝图：
+仓库根目录已提供 `render.yaml` 蓝图（区域为 **Singapore**，比美国节点更适合国内访问）：
 
 1. 在 Render 中选择 **New > Blueprint**，连接本仓库。
 2. Render 会自动创建 PostgreSQL 数据库与 Web 服务，并注入 `DATABASE_URL`，自动生成 `SESSION_SECRET`。
-3. 在 Web 服务的环境变量中手动设置 `ADMIN_USERNAME` 与 `ADMIN_PASSWORD`（如需图片上传，另配 Cloudinary 变量）。
+3. 在 Web 服务的环境变量中手动设置 `ADMIN_USERNAME` 与 `ADMIN_PASSWORD`，并把 `NEXT_PUBLIC_SITE_URL` 设为实际上线地址。
 4. 部署时会在预部署阶段执行 `prisma migrate deploy` 与幂等种子脚本。
 
 > 若自动生成的 `SESSION_SECRET` 不足 32 字符，请在控制台手动填入一个足够长的随机字符串。
+
+## 让国内也能稳定打开 / China Access
+
+站点本身**不依赖 Google 字体 / 被墙 CDN**，图片默认存在自家数据库，国内网络可以打开。常见「打不开」其实是 Render **免费实例休眠**后冷启动很慢。
+
+已做的优化：
+
+1. **保活**：`.github/workflows/keep-alive.yml` 每 10 分钟访问 `/api/health`，减少休眠。请在 GitHub 仓库 **Settings → Secrets → Actions** 增加 `SITE_URL`（例如 `https://qingyi.onrender.com`），并确保 Actions 已启用。
+2. **新加坡区域**：`render.yaml` 使用 `singapore`。
+3. **香港部署备选**：仓库含 `Dockerfile` + `fly.toml`（`primary_region = "hkg"`）。若 Render 仍偏慢，可用 [Fly.io](https://fly.io) 部署到香港：
+
+```bash
+fly launch --no-deploy
+fly postgres create --region hkg
+fly secrets set DATABASE_URL=... SESSION_SECRET=... ADMIN_USERNAME=... ADMIN_PASSWORD=... NEXT_PUBLIC_SITE_URL=https://你的域名
+fly deploy
+```
+
+4. **自定义域名（推荐）**：在 Render 绑定你自己的域名，再在 Cloudflare 做 DNS 代理，分享链接更正规，也便于以后换主机。
+
+> **备案说明**：若要使用 `.cn` 域名并在中国大陆机房托管（阿里云 / 腾讯云等），需要完成 **ICP 备案**，周期通常数周。未备案前，用海外主机（新加坡 / 香港）+ `.com` / 现有 Render 域名即可给国内访客使用，只是高峰时可能偏慢。
 
 ## 常用脚本 / Scripts
 

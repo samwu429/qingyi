@@ -1,0 +1,39 @@
+# Ping the production site every few minutes so Render's free web service does
+# not fall asleep. Cold starts (30–60s) are a common reason visitors in China
+# think the site is "unreachable".
+# 每隔几分钟探测生产站点，避免 Render 免费 Web 服务休眠。
+# 冷启动 30–60 秒，是国内访客误以为「打不开」的常见原因。
+name: Keep site awake
+
+on:
+  schedule:
+    # Every 10 minutes (GitHub may delay cron slightly on free plans).
+    # 每 10 分钟一次（免费计划上 cron 可能略有延迟）。
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Wake production site
+        env:
+          # Set repo secret SITE_URL to your live origin, e.g. https://qingyi.onrender.com
+          # 在仓库 Secrets 中设置 SITE_URL，例如 https://qingyi.onrender.com
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          TARGET="${SITE_URL:-https://qingyi.onrender.com}"
+          TARGET="${TARGET%/}"
+          echo "Pinging ${TARGET}/api/health"
+          for i in 1 2 3; do
+            if curl -fsS --max-time 90 "${TARGET}/api/health"; then
+              echo ""
+              echo "OK (attempt ${i})"
+              exit 0
+            fi
+            echo "Attempt ${i} failed, retrying..."
+            sleep 5
+          done
+          echo "Keep-alive ping failed after retries"
+          exit 1

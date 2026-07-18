@@ -1,0 +1,25 @@
+# Optional Fly.io config targeting Hong Kong for better reachability from
+# mainland China than US regions. Create the app once, then:
+#   fly launch --no-deploy
+#   fly postgres create --region hkg
+#   fly secrets set SESSION_SECRET=... ADMIN_USERNAME=... ADMIN_PASSWORD=... DATABASE_URL=...
+#   fly deploy
+# 可选 Fly.io 配置，区域选香港，国内可达性通常优于美国节点。创建应用后按上方命令部署。
+
+app = "qingyi-media"
+primary_region = "hkg"
+
+[build]
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

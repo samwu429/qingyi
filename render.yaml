@@ -39,6 +39,10 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Public origin used for absolute links / Open Graph. Set to your live URL.
+      # 用于绝对链接 / Open Graph 的站点源地址，请设为实际上线 URL。
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://qingyi.onrender.com
       # Optional Cloudinary references for image uploads.
       # 可选的 Cloudinary 图片上传引用。
       - key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
