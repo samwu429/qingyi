@@ -1,10 +1,9 @@
-import { siteConfig } from "@/config/site.config";
 import { Container } from "@/ui/components/primitives/container";
 import { ButtonLink } from "@/ui/components/primitives/button-link";
 import { SectionHeading } from "@/ui/components/primitives/section-heading";
 import { StreamerCard } from "@/ui/components/cards/streamer-card/streamer-card";
 import { PostCard } from "@/ui/components/cards/post-card/post-card";
-import { RemoteImage } from "@/ui/components/media/remote-image";
+import { HomeHero } from "@/ui/components/home/home-hero/home-hero";
 import { siteContentService } from "@/domain/site/site-content.service";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { postService } from "@/domain/blog/post.service";
@@ -23,43 +22,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/*
-        First viewport: one composition — brand, headline, one sentence, CTAs,
-        and a full-bleed visual plane. Stats and secondary marketing sit below.
-        首屏单一构图：品牌、标题、一句说明、行动按钮与全幅视觉；统计与次级营销下移。
-      */}
-      <section className="hero-plane min-h-[calc(100vh-4rem)]">
-        <Container className="grid min-h-[calc(100vh-4rem)] items-end gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="flex flex-col justify-center py-16 lg:py-24 lg:pr-12">
-            <p className="motion-fade font-display text-5xl font-black leading-none text-jade-500 sm:text-6xl">
-              {siteConfig.brandName}
-            </p>
-            <h1 className="motion-rise mt-6 max-w-xl font-display text-3xl font-bold leading-tight text-mist-100 sm:text-4xl lg:text-[2.75rem]">
-              {home.heroTitle}
-            </h1>
-            <p className="motion-rise-delay mt-5 max-w-md text-base leading-relaxed text-mist-300">
-              {home.heroSubtitle}
-            </p>
-            <div className="motion-rise-delay mt-9 flex flex-wrap gap-3">
-              <ButtonLink href={home.heroCtaHref}>
-                {home.heroCtaLabel}
-              </ButtonLink>
-              <ButtonLink href={home.heroSecondaryHref} variant="secondary">
-                {home.heroSecondaryLabel}
-              </ButtonLink>
-            </div>
-          </div>
-
-          <div className="motion-image relative min-h-[42vh] border-t border-mist-100/10 lg:min-h-full lg:border-l lg:border-t-0">
-            <RemoteImage
-              src={home.heroImageUrl}
-              alt="青意传媒直播现场"
-              className="absolute inset-0 h-full w-full object-cover"
-              fallbackLabel="青意"
-            />
-          </div>
-        </Container>
-      </section>
+      <HomeHero content={home} />
 
       {home.stats.length > 0 ? (
         <section className="border-y border-mist-100/10 bg-white">
