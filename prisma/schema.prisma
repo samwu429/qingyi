@@ -91,6 +91,20 @@ model SiteSetting {
   @@map("site_settings")
 }
 
+// Binary image asset uploaded from the admin panel. Stored in Postgres so
+// files survive Render's ephemeral disk (Cloudinary is still preferred when set).
+// 后台上传的图片二进制资源，存入 Postgres，避免 Render 瞬时磁盘丢失文件
+//（若已配置 Cloudinary 则仍优先走云端）。
+model MediaAsset {
+  id          String   @id @default(cuid())
+  mimeType    String
+  byteSize    Int
+  data        Bytes
+  createdAt   DateTime @default(now())
+
+  @@map("media_assets")
+}
+
 // Recruitment / join-us enquiry submitted from the public site.
 // 前台「加入我们」页提交的招募留言。
 model JoinInquiry {

@@ -1,15 +1,14 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { randomBytes } from "node:crypto";
 import {
   isCloudinaryConfigured,
   publicMediaConfig,
 } from "@/config/env";
+import { prisma } from "@/infrastructure/database/prisma/client";
 
-// Media upload helpers for the admin panel. Prefer Cloudinary when configured so
-// images survive ephemeral hosts; otherwise persist under public/uploads.
-// 后台媒体上传辅助：已配置 Cloudinary 时优先使用以保证图片在瞬时主机上持久；
-// 否则写入 public/uploads。
+// Media upload helpers for the admin panel. Prefer Cloudinary when configured;
+// otherwise store bytes in Postgres and expose them via /api/media/:id so images
+// survive Render redeploys (local public/uploads would be wiped).
+// 后台媒体上传辅助：已配置 Cloudinary 时优先使用；否则把字节写入 Postgres，
+// 并通过 /api/media/:id 对外提供，避免 Render 重新部署清空本地 public/uploads。
 
 const ALLOWED_MIME = new Set([
   "image/jpeg",
@@ -19,13 +18,6 @@ const ALLOWED_MIME = new Set([
 ]);
 
 const MAX_BYTES = 5 * 1024 * 1024;
-
-const EXTENSION_BY_MIME: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-};
 
 export class MediaUploadError extends Error {
   constructor(message: string) {
@@ -62,14 +54,17 @@ async function uploadToCloudinary(file: File): Promise<string> {
   return data.secure_url;
 }
 
-async function uploadToLocalDisk(file: File): Promise<string> {
-  const extension = EXTENSION_BY_MIME[file.type] ?? "bin";
-  const filename = `${Date.now()}-${randomBytes(6).toString("hex")}.${extension}`;
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
+async function uploadToDatabase(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadsDir, filename), buffer);
-  return `/uploads/${filename}`;
+  const asset = await prisma.mediaAsset.create({
+    data: {
+      mimeType: file.type,
+      byteSize: buffer.byteLength,
+      data: buffer,
+    },
+    select: { id: true },
+  });
+  return `/api/media/${asset.id}`;
 }
 
 // Persist an image and return a publicly reachable URL.
@@ -79,5 +74,5 @@ export async function persistAdminImage(file: File): Promise<string> {
   if (isCloudinaryConfigured()) {
     return uploadToCloudinary(file);
   }
-  return uploadToLocalDisk(file);
+  return uploadToDatabase(file);
 }

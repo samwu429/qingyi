@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-// Optional media / outbound link field. Accepts an empty value, a site-local
-// upload path (/uploads/...), or an absolute http(s) URL. FormData may also
-// yield null when a field is absent; treat that as empty.
-// 可选的媒体 / 外链字段：允许空值、站内上传路径（/uploads/...）或绝对 http(s) URL。
-// FormData 在字段缺失时可能给出 null，按空值处理。
+// Optional media / outbound link field. Accepts an empty value, a durable
+// site media path (/api/media/...), a legacy local upload path, or an absolute
+// http(s) URL. FormData may also yield null when a field is absent.
+// 可选的媒体 / 外链字段：允许空值、持久站内媒体路径（/api/media/...）、
+// 历史本地上传路径，或绝对 http(s) URL。FormData 字段缺失时可能为 null。
 export const optionalUrlSchema = z.preprocess(
   (value) => {
     if (value === null || value === undefined) {
@@ -24,6 +24,9 @@ export const optionalUrlSchema = z.preprocess(
   },
   z.union([
     z.literal(""),
+    z
+      .string()
+      .regex(/^\/api\/media\/[a-zA-Z0-9_-]+$/, "站内媒体路径无效"),
     z
       .string()
       .regex(/^\/uploads\/[A-Za-z0-9._-]+$/, "本地上传路径无效"),
