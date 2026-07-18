@@ -13,6 +13,19 @@ export function formatFollowers(count: number): string {
   return count.toLocaleString("zh-CN");
 }
 
+// Format an income figure (in whole RMB yuan) into a compact ¥ label (万 / 亿).
+// Used for internal, admin-only statistics.
+// 将收入金额（整数人民币元）格式化为紧凑的 ¥ 标签（万 / 亿），用于后台内部统计。
+export function formatMoney(yuan: number): string {
+  if (yuan >= 100_000_000) {
+    return `¥${(yuan / 100_000_000).toFixed(2).replace(/\.?0+$/, "")}亿`;
+  }
+  if (yuan >= 10_000) {
+    return `¥${(yuan / 10_000).toFixed(2).replace(/\.?0+$/, "")}万`;
+  }
+  return `¥${yuan.toLocaleString("zh-CN")}`;
+}
+
 // Format a date as YYYY-MM-DD in the Shanghai timezone for stable, locale-aware
 // display regardless of server region.
 // 以上海时区将日期格式化为 YYYY-MM-DD，确保不同服务器区域下展示一致。
