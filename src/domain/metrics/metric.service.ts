@@ -2,6 +2,8 @@ import type { StreamerMetric } from "@prisma/client";
 import { metricRepository } from "@/infrastructure/database/repositories/metric.repository";
 import { streamerRepository } from "@/infrastructure/database/repositories/streamer.repository";
 import type { MetricInput } from "@/domain/metrics/metric.schema";
+import { computeGrowth } from "@/domain/metrics/growth";
+import { formatDate } from "@/lib/text/format";
 
 // Application services for streamer performance data. Creating or deleting a
 // record re-syncs the public fan count so the site always mirrors the latest
@@ -19,18 +21,50 @@ export interface StreamerMetricRow {
   latestIncome: number;
   latestPeriod: string | null;
   recordCount: number;
+  followersDelta: number | null;
+  followersGrowthPct: number | null;
+  incomeDelta: number | null;
+  incomeGrowthPct: number | null;
 }
 
 export interface MetricDashboard {
   rows: StreamerMetricRow[];
   followersRank: StreamerMetricRow[];
   incomeRank: StreamerMetricRow[];
+  growthRank: StreamerMetricRow[];
   totals: {
     streamers: number;
     followers: number;
     income: number;
     records: number;
   };
+}
+
+// A streamer performance record enriched with growth versus the previous period.
+// 附带环比增长信息的主播运营数据记录。
+export interface MetricHistoryRow {
+  id: string;
+  period: string;
+  followers: number;
+  income: number;
+  note: string | null;
+  recordedAt: string;
+  followersDelta: number | null;
+  followersGrowthPct: number | null;
+  incomeDelta: number | null;
+  incomeGrowthPct: number | null;
+}
+
+// A flattened row prepared for CSV export.
+// 为 CSV 导出准备的扁平行。
+export interface MetricExportRow {
+  name: string;
+  category: string;
+  period: string;
+  recordedAt: string;
+  followers: number;
+  income: number;
+  note: string;
 }
 
 // Recompute the public fan count from the streamer's newest record.
@@ -45,6 +79,46 @@ async function syncLatestFollowers(streamerId: string): Promise<void> {
 export const metricService = {
   listByStreamer(streamerId: string): Promise<StreamerMetric[]> {
     return metricRepository.listByStreamer(streamerId);
+  },
+
+  // History (newest first) with each record compared to the older one below it.
+  // 历史记录（最新在前），每条与其下方的上一期对比得出环比。
+  async getStreamerHistory(streamerId: string): Promise<MetricHistoryRow[]> {
+    const metrics = await metricRepository.listByStreamer(streamerId);
+    return metrics.map((metric, index) => {
+      const previous = metrics[index + 1];
+      const followersGrowth = computeGrowth(metric.followers, previous?.followers);
+      const incomeGrowth = computeGrowth(metric.income, previous?.income);
+      return {
+        id: metric.id,
+        period: metric.period,
+        followers: metric.followers,
+        income: metric.income,
+        note: metric.note,
+        recordedAt: formatDate(metric.recordedAt),
+        followersDelta: followersGrowth.delta,
+        followersGrowthPct: followersGrowth.pct,
+        incomeDelta: incomeGrowth.delta,
+        incomeGrowthPct: incomeGrowth.pct,
+      };
+    });
+  },
+
+  async getExportRows(filter: {
+    from?: Date;
+    to?: Date;
+    streamerId?: string;
+  }): Promise<MetricExportRow[]> {
+    const metrics = await metricRepository.listForExport(filter);
+    return metrics.map((metric) => ({
+      name: metric.streamer?.name ?? "",
+      category: metric.streamer?.category ?? "",
+      period: metric.period,
+      recordedAt: formatDate(metric.recordedAt),
+      followers: metric.followers,
+      income: metric.income,
+      note: metric.note ?? "",
+    }));
   },
 
   async create(input: MetricInput): Promise<StreamerMetric> {
@@ -89,6 +163,12 @@ export const metricService = {
         .sort((a, b) => b.recordedAt.getTime() - a.recordedAt.getTime());
       const totalIncome = list.reduce((sum, item) => sum + item.income, 0);
       const latest = list[0];
+      const previous = list[1];
+      const followersGrowth = computeGrowth(
+        latest?.followers ?? streamer.followers,
+        previous?.followers,
+      );
+      const incomeGrowth = computeGrowth(latest?.income ?? 0, previous?.income);
       return {
         id: streamer.id,
         name: streamer.name,
@@ -99,6 +179,10 @@ export const metricService = {
         latestIncome: latest?.income ?? 0,
         latestPeriod: latest?.period ?? null,
         recordCount: list.length,
+        followersDelta: followersGrowth.delta,
+        followersGrowthPct: followersGrowth.pct,
+        incomeDelta: incomeGrowth.delta,
+        incomeGrowthPct: incomeGrowth.pct,
       };
     });
 
@@ -111,7 +195,10 @@ export const metricService = {
 
     const followersRank = [...rows].sort((a, b) => b.followers - a.followers);
     const incomeRank = [...rows].sort((a, b) => b.totalIncome - a.totalIncome);
+    const growthRank = [...rows]
+      .filter((row) => row.followersDelta !== null)
+      .sort((a, b) => (b.followersDelta ?? 0) - (a.followersDelta ?? 0));
 
-    return { rows, followersRank, incomeRank, totals };
+    return { rows, followersRank, incomeRank, growthRank, totals };
   },
 };

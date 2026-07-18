@@ -26,6 +26,28 @@ export function formatMoney(yuan: number): string {
   return `¥${yuan.toLocaleString("zh-CN")}`;
 }
 
+// Format a signed integer delta with a leading + for positive values.
+// 为增量数值添加符号，正值前缀 +。
+export function formatSignedInt(value: number): string {
+  const label = Math.abs(value).toLocaleString("zh-CN");
+  if (value > 0) return `+${label}`;
+  if (value < 0) return `-${label}`;
+  return "0";
+}
+
+// Format a period-over-period growth percentage. null means no comparable
+// previous record (or a zero base), rendered as an em dash.
+// 格式化环比增长百分比。null 表示无可比上期（或基数为 0），显示为破折号。
+export function formatGrowthPct(value: number | null): string {
+  if (value === null || Number.isNaN(value)) {
+    return "—";
+  }
+  const rounded = Math.abs(value) >= 100 ? Math.round(value) : Number(value.toFixed(1));
+  const label = `${rounded}%`;
+  if (rounded > 0) return `+${label}`;
+  return label;
+}
+
 // Format a date as YYYY-MM-DD in the Shanghai timezone for stable, locale-aware
 // display regardless of server region.
 // 以上海时区将日期格式化为 YYYY-MM-DD，确保不同服务器区域下展示一致。

@@ -22,6 +22,27 @@ export const metricRepository = {
     });
   },
 
+  listForExport(filter: { from?: Date; to?: Date; streamerId?: string }) {
+    const where: Prisma.StreamerMetricWhereInput = {};
+    if (filter.streamerId) {
+      where.streamerId = filter.streamerId;
+    }
+    if (filter.from || filter.to) {
+      where.recordedAt = {};
+      if (filter.from) {
+        where.recordedAt.gte = filter.from;
+      }
+      if (filter.to) {
+        where.recordedAt.lte = filter.to;
+      }
+    }
+    return prisma.streamerMetric.findMany({
+      where,
+      orderBy: [{ recordedAt: "desc" }, { createdAt: "desc" }],
+      include: { streamer: { select: { name: true, category: true } } },
+    });
+  },
+
   latestForStreamer(streamerId: string): Promise<StreamerMetric | null> {
     return prisma.streamerMetric.findFirst({
       where: { streamerId },

@@ -11,16 +11,13 @@ import {
   initialActionResult,
   type ActionResult,
 } from "@/app/admin/_actions/action-result";
-import { formatFollowers, formatMoney } from "@/lib/text/format";
-
-export interface MetricRow {
-  id: string;
-  period: string;
-  followers: number;
-  income: number;
-  note: string | null;
-  recordedAt: string;
-}
+import type { MetricHistoryRow } from "@/domain/metrics/metric.service";
+import {
+  formatFollowers,
+  formatGrowthPct,
+  formatMoney,
+  formatSignedInt,
+} from "@/lib/text/format";
 
 // Admin-only performance data manager rendered on the streamer edit page.
 // Uploads add a dated record (fans + income); the newest record's fan count is
@@ -32,7 +29,7 @@ export function StreamerMetricsPanel({
   metrics,
 }: {
   streamerId: string;
-  metrics: MetricRow[];
+  metrics: MetricHistoryRow[];
 }) {
   const boundCreate = createMetricAction.bind(null, streamerId);
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
@@ -137,7 +134,9 @@ export function StreamerMetricsPanel({
                   <th className="px-4 py-2.5 font-medium">周期</th>
                   <th className="px-4 py-2.5 font-medium">日期</th>
                   <th className="px-4 py-2.5 font-medium">粉丝数</th>
+                  <th className="px-4 py-2.5 font-medium">粉丝环比</th>
                   <th className="px-4 py-2.5 font-medium">直播收入</th>
+                  <th className="px-4 py-2.5 font-medium">收入环比</th>
                   <th className="px-4 py-2.5 font-medium">备注</th>
                   <th className="px-4 py-2.5 text-right font-medium">操作</th>
                 </tr>
@@ -157,8 +156,20 @@ export function StreamerMetricsPanel({
                         ({formatFollowers(metric.followers)})
                       </span>
                     </td>
+                    <td className="px-4 py-2.5">
+                      <GrowthCell
+                        delta={metric.followersDelta}
+                        pct={metric.followersGrowthPct}
+                      />
+                    </td>
                     <td className="px-4 py-2.5 text-mist-200">
                       {formatMoney(metric.income)}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <GrowthCell
+                        delta={metric.incomeDelta}
+                        pct={metric.incomeGrowthPct}
+                      />
                     </td>
                     <td className="px-4 py-2.5 text-mist-400">
                       {metric.note ?? "—"}
@@ -189,5 +200,28 @@ export function StreamerMetricsPanel({
         )}
       </div>
     </section>
+  );
+}
+
+// Colour-coded growth cell: green for gains, red for drops, muted for the first
+// record where no comparison exists.
+// 带颜色的环比单元格：上涨为绿色，下降为红色，首条无对比时置灰。
+function GrowthCell({
+  delta,
+  pct,
+}: {
+  delta: number | null;
+  pct: number | null;
+}) {
+  if (delta === null) {
+    return <span className="text-mist-400">—</span>;
+  }
+  const tone =
+    delta > 0 ? "text-jade-600" : delta < 0 ? "text-red-600" : "text-mist-400";
+  return (
+    <span className={tone}>
+      {formatSignedInt(delta)}
+      <span className="ml-1 text-xs">({formatGrowthPct(pct)})</span>
+    </span>
   );
 }
