@@ -117,11 +117,13 @@ export function StreamerForm({
         label="头像图片地址"
         name="avatarUrl"
         defaultValue={streamer?.avatarUrl ?? ""}
+        hint={fieldError("avatarUrl")}
       />
       <ImageUrlField
         label="封面图片地址"
         name="coverUrl"
         defaultValue={streamer?.coverUrl ?? ""}
+        hint={fieldError("coverUrl")}
       />
 
       <Field label="直播间链接" htmlFor="platformUrl" hint={fieldError("platformUrl")}>

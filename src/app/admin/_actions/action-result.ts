@@ -26,3 +26,13 @@ export function toFieldErrors(
   }
   return result;
 }
+
+// Collapse field errors into a short banner message for the form footer.
+// 将字段错误收敛为表单底部的简短横幅提示。
+export function summarizeFormErrors(fieldErrors: Record<string, string>): string {
+  const messages = Object.values(fieldErrors);
+  if (messages.length === 0) {
+    return "请检查表单填写";
+  }
+  return messages.slice(0, 3).join("；");
+}

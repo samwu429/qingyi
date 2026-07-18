@@ -14,10 +14,12 @@ export function ImageUrlField({
   label,
   name,
   defaultValue,
+  hint,
 }: {
   label: string;
   name: string;
   defaultValue: string;
+  hint?: string;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [uploading, setUploading] = useState(false);
@@ -59,7 +61,7 @@ export function ImageUrlField({
   };
 
   return (
-    <Field label={label} htmlFor={name}>
+    <Field label={label} htmlFor={name} hint={hint}>
       <div className="space-y-3">
         <div
           onDragEnter={(event) => {

@@ -81,6 +81,7 @@ export function PostForm({
         label="封面图片地址"
         name="coverUrl"
         defaultValue={post?.coverUrl ?? ""}
+        hint={fieldError("coverUrl")}
       />
 
       <div className="grid gap-5 sm:grid-cols-2">

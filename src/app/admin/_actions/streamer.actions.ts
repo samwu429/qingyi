@@ -6,6 +6,7 @@ import { streamerInputSchema } from "@/domain/streamers/streamer.schema";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { requireAdmin } from "@/app/admin/_actions/guard";
 import {
+  summarizeFormErrors,
   toFieldErrors,
   type ActionResult,
 } from "@/app/admin/_actions/action-result";
@@ -66,9 +67,10 @@ export async function createStreamerAction(
   await requireAdmin();
   const parsed = buildInput(formData);
   if (!parsed.success) {
+    const fieldErrors = toFieldErrors(parsed.error.issues);
     return {
-      error: "请检查表单填写",
-      fieldErrors: toFieldErrors(parsed.error.issues),
+      error: summarizeFormErrors(fieldErrors),
+      fieldErrors,
     };
   }
 
@@ -87,9 +89,10 @@ export async function updateStreamerAction(
   await requireAdmin();
   const parsed = buildInput(formData);
   if (!parsed.success) {
+    const fieldErrors = toFieldErrors(parsed.error.issues);
     return {
-      error: "请检查表单填写",
-      fieldErrors: toFieldErrors(parsed.error.issues),
+      error: summarizeFormErrors(fieldErrors),
+      fieldErrors,
     };
   }
 
