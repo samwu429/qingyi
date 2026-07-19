@@ -693,145 +693,124 @@ body {
 }
 
 /*
-  Industry convergence Venn — circular accent on a square site.
-  Pairwise zones tint sage; the triple core reads darker by stacked fills.
-  产业交汇三圈：全站直角里的圆点缀；两两交叠青绿浅染，三圈核心叠色更深。
+  Creative Ops + Venn as one composition: stacked practice list beside the
+  industry circles. No separate full-width Venn band.
+  「三件实事」与三圈图同一构图：左侧实务列表，右侧产业交汇圆，不再单独占带。
 */
-.convergence {
+.ops-compose {
   display: grid;
-  gap: 2.5rem;
+  gap: 2.25rem;
+  align-items: center;
 }
 
-@media (min-width: 960px) {
-  .convergence {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
-    align-items: center;
-    gap: 3rem;
+@media (min-width: 900px) {
+  .ops-compose {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.95fr);
+    gap: 2.5rem 3rem;
   }
 }
 
-.convergence__eyebrow {
-  margin: 0 0 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.ops-compose__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
+}
+
+.ops-compose__item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 0.85rem 1rem;
+  padding: 1.35rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
+}
+
+.ops-compose__index {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
   color: var(--color-jade-500);
 }
 
-.convergence__title {
+.ops-compose__title {
   margin: 0;
-  font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.35;
   color: var(--color-mist-100);
 }
 
-.convergence__lead {
-  margin: 1rem 0 0;
-  max-width: 28rem;
-  font-size: 0.975rem;
-  line-height: 1.75;
+.ops-compose__body {
+  margin: 0.45rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.7;
   color: var(--color-mist-300);
 }
 
-.convergence__stage {
-  position: relative;
-  width: min(100%, 34rem);
+.ops-compose__venn {
+  width: min(100%, 26rem);
   margin-inline: auto;
-  aspect-ratio: 640 / 560;
 }
 
-.convergence__svg {
+@media (min-width: 900px) {
+  .ops-compose__venn {
+    width: 100%;
+    max-width: 28rem;
+    margin-inline: 0 0 auto;
+  }
+}
+
+.convergence-venn {
+  position: relative;
+}
+
+.convergence-venn__svg {
   display: block;
   width: 100%;
   height: auto;
 }
 
-.convergence__disc {
-  fill: color-mix(in srgb, var(--color-jade-500) 22%, transparent);
-  stroke: none;
+.convergence-venn__disc {
+  fill: color-mix(in srgb, var(--color-jade-500) 20%, transparent);
   mix-blend-mode: multiply;
 }
 
-.convergence__rings circle {
-  stroke: color-mix(in srgb, var(--color-mist-100) 55%, transparent);
-  stroke-width: 1.25;
+.convergence-venn__rings circle {
+  stroke: color-mix(in srgb, var(--color-mist-100) 48%, transparent);
+  stroke-width: 1.15;
 }
 
-.convergence__labels {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  pointer-events: none;
-}
-
-.convergence__label {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  width: max-content;
-  max-width: 9.5rem;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.convergence__label--outer {
-  gap: 0.05rem;
+.convergence-venn__outer {
+  fill: var(--color-mist-100);
   font-family: var(--font-sans);
-  font-size: clamp(0.68rem, 1.5vw, 0.8rem);
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.25;
   letter-spacing: 0.01em;
-  color: var(--color-mist-100);
 }
 
-.convergence__label--outer span {
-  display: block;
-}
-
-.convergence__label--pair .convergence__label-zh {
+.convergence-venn__pair {
+  fill: var(--color-mist-100);
   font-family: var(--font-display);
-  font-size: clamp(0.72rem, 1.55vw, 0.88rem);
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.25;
-  color: var(--color-mist-100);
 }
 
-.convergence__label--pair .convergence__label-en {
-  font-size: clamp(0.58rem, 1.2vw, 0.68rem);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--color-mist-400);
-}
-
-.convergence__label--center .convergence__label-zh {
+.convergence-venn__core {
+  fill: var(--color-mist-100);
   font-family: var(--font-display);
-  font-size: clamp(0.78rem, 1.7vw, 0.95rem);
+  font-size: 16px;
   font-weight: 700;
-  line-height: 1.3;
-  color: var(--color-mist-100);
 }
 
-.convergence__label--center .convergence__label-en {
-  font-size: clamp(0.58rem, 1.2vw, 0.66rem);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--color-jade-600);
-}
-
-@media (max-width: 520px) {
-  .convergence__label--outer {
-    max-width: 7.2rem;
-    font-size: 0.62rem;
-  }
-
-  .convergence__label--pair .convergence__label-en,
-  .convergence__label--center .convergence__label-en {
-    display: none;
-  }
+.convergence-venn__core-sub {
+  fill: var(--color-jade-600);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }

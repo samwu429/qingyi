@@ -46,35 +46,25 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Creative Ops"
               title="内容产业里的三件实事"
-              lead="人设真实感、算法可见性、内容 IP 变现——只做能落地的陪跑。"
+              lead="人设、分发、变现三件能落地的事；站在网络、计算与内容的交汇处做直播与短视频。"
             />
-            <div className="mt-12 grid gap-px bg-mist-100/10 md:grid-cols-3">
-              {home.highlights.map((item, index) => (
-                <div
-                  key={`${item.title}-${index}`}
-                  className="bg-ink-950 p-8 transition-colors hover:bg-white"
-                >
-                  <p className="font-display text-sm text-jade-500">
-                    0{index + 1}
-                  </p>
-                  <h3 className="mt-4 font-display text-xl font-bold text-mist-100">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-mist-300">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
+            <div className="ops-compose mt-12">
+              <ol className="ops-compose__list">
+                {home.highlights.map((item, index) => (
+                  <li key={`${item.title}-${index}`} className="ops-compose__item">
+                    <p className="ops-compose__index">0{index + 1}</p>
+                    <div>
+                      <h3 className="ops-compose__title">{item.title}</h3>
+                      <p className="ops-compose__body">{item.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <ConvergenceVenn className="ops-compose__venn" />
             </div>
           </Container>
         </section>
       ) : null}
-
-      <section className="border-y border-mist-100/8 bg-white/70 py-20">
-        <Container>
-          <ConvergenceVenn />
-        </Container>
-      </section>
 
       {featuredStreamers.length > 0 ? (
         <section className="pb-20">
