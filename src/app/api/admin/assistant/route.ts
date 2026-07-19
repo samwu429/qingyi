@@ -43,6 +43,23 @@ function parseHistory(raw: FormDataEntryValue | null): AdminChatTurn[] {
   }
 }
 
+function resolvePublicBaseUrl(request: Request): string | undefined {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  if (configured) {
+    return configured;
+  }
+  const origin = request.headers.get("origin")?.trim().replace(/\/$/, "");
+  if (origin && /^https?:\/\//i.test(origin) && !/localhost|127\.0\.0\.1/i.test(origin)) {
+    return origin;
+  }
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  if (host && !/localhost|127\.0\.0\.1/i.test(host)) {
+    return `${proto}://${host}`;
+  }
+  return undefined;
+}
+
 export async function POST(request: Request) {
   const admin = await getCurrentAdmin();
   if (!admin) {
@@ -73,7 +90,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const attachments = await parseAssistantAttachments(files);
+    const publicBaseUrl = resolvePublicBaseUrl(request);
+    const attachments = await parseAssistantAttachments(files, {
+      publicBaseUrl,
+    });
     const result = await runAdminAssistant({
       message: message.trim() || "请根据附件处理后台数据。",
       history,
@@ -89,7 +109,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     if (error instanceof GroqError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
     }
     console.error("admin assistant failed", error);
     return NextResponse.json(

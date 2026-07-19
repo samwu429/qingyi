@@ -65,8 +65,52 @@ export class GroqError extends Error {
 
 function assertApiKey(): void {
   if (!groqConfig.apiKey) {
-    throw new GroqError("聊天服务未配置", 503);
+    throw new GroqError("聊天服务未配置（缺少 GROQ_API_KEY）", 503);
   }
+}
+
+function mapGroqFailure(status: number, detail: string): GroqError {
+  const lower = detail.toLowerCase();
+  if (status === 401 || status === 403) {
+    return new GroqError(
+      "Groq API Key 无效或无权限，请在 Render 环境变量检查 GROQ_API_KEY",
+      502,
+    );
+  }
+  if (status === 429) {
+    return new GroqError("AI 调用过于频繁，请稍后再试", 429);
+  }
+  if (
+    status === 413 ||
+    lower.includes("too large") ||
+    lower.includes("20mb") ||
+    lower.includes("request too large")
+  ) {
+    return new GroqError(
+      "图片或请求过大。请压缩截图后再传（建议单张 2MB 内），或配置 NEXT_PUBLIC_SITE_URL 以便走外链识图",
+      400,
+    );
+  }
+  if (
+    lower.includes("model") &&
+    (lower.includes("not found") ||
+      lower.includes("decommission") ||
+      lower.includes("does not exist") ||
+      lower.includes("invalid"))
+  ) {
+    return new GroqError(
+      "AI 模型不可用，请检查 GROQ_VISION_MODEL / GROQ_ADMIN_MODEL / GROQ_MODEL",
+      502,
+    );
+  }
+  if (lower.includes("tool") && lower.includes("fail")) {
+    return new GroqError(
+      "当前模型工具调用失败，请稍后重试或更换 GROQ_ADMIN_MODEL",
+      502,
+    );
+  }
+  console.error("groq upstream detail", status, detail.slice(0, 800));
+  return new GroqError("聊天服务暂时不可用", 502);
 }
 
 // Call Groq and return a ReadableStream of decoded assistant text tokens.
@@ -94,8 +138,7 @@ export async function streamGroqChat(
 
   if (!upstream.ok || !upstream.body) {
     const detail = await upstream.text().catch(() => "");
-    console.error("groq request failed", upstream.status, detail);
-    throw new GroqError("聊天服务暂时不可用", 502);
+    throw mapGroqFailure(upstream.status, detail);
   }
 
   const decoder = new TextDecoder();
@@ -183,8 +226,7 @@ export async function groqChatCompletion(options: {
 
   if (!upstream.ok) {
     const detail = await upstream.text().catch(() => "");
-    console.error("groq completion failed", upstream.status, detail);
-    throw new GroqError("聊天服务暂时不可用", 502);
+    throw mapGroqFailure(upstream.status, detail);
   }
 
   const json = (await upstream.json()) as {

@@ -1,15 +1,22 @@
 import * as XLSX from "xlsx";
 import mammoth from "mammoth";
+import { persistAdminImage } from "@/infrastructure/media/upload/persist-image";
+import {
+  resolveMediaMime,
+  withResolvedMime,
+} from "@/infrastructure/media/upload/mime";
 
-// Parse admin-assistant uploads into text excerpts and/or image data URLs for
-// the multimodal model. Content-media upload rules stay separate.
-// 将后台助手上传文件解析为文本摘录和/或图片 data URL，供多模态模型使用。
-// 与资讯正文媒体上传规则相互独立。
+// Parse admin-assistant uploads into text excerpts and/or vision image URLs.
+// Images prefer a public /api/media URL (smaller Groq payload); base64 is only
+// a fallback for tiny files when no public site origin is available.
+// 后台助手附件解析：图片优先落库后用公开 /api/media 地址（减小 Groq 载荷）；
+// 无站点公网地址时，仅小图才回退 base64。
 
 const MAX_BYTES = 25 * 1024 * 1024;
-/** Vision payloads are heavier; keep screenshots modest for Groq. */
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_IMAGES = 6;
+/** Base64 fallback must stay well under Groq's 20MB request ceiling. */
+const MAX_BASE64_IMAGE_BYTES = 1_500_000;
+const MAX_IMAGES = 4;
 const MAX_TEXT_CHARS = 40_000;
 const MAX_FILES = 12;
 
@@ -48,9 +55,8 @@ export interface ParsedAttachment {
   name: string;
   kind: "image" | "text" | "table" | "document";
   mimeType: string;
-  /** Present for images — data URL for Groq vision. */
+  /** Public https URL or data URL for Groq vision. */
   imageDataUrl?: string;
-  /** Extracted plain text / CSV excerpt. */
   text?: string;
 }
 
@@ -67,7 +73,12 @@ function detectKind(
 ): "image" | "text" | "table" | "document" | "reject" {
   const lower = name.toLowerCase();
   if (IMAGE_MIME.has(mime)) return "image";
-  if (TEXT_MIME.has(mime) || lower.endsWith(".txt") || lower.endsWith(".csv") || lower.endsWith(".md")) {
+  if (
+    TEXT_MIME.has(mime) ||
+    lower.endsWith(".txt") ||
+    lower.endsWith(".csv") ||
+    lower.endsWith(".md")
+  ) {
     return lower.endsWith(".csv") || mime === "text/csv" ? "table" : "text";
   }
   if (
@@ -104,9 +115,6 @@ async function extractDocx(buffer: Buffer): Promise<string> {
 }
 
 async function extractPdfHint(file: File): Promise<string> {
-  // Lightweight PDF support: we do not OCR scanned PDFs. Prefer screenshots /
-  // CSV for reliable metric import. Text-layer PDFs may still yield little.
-  // 轻量 PDF：不做扫描件 OCR。运营数据建议用截图或 CSV；文字层 PDF 也可能提取很少。
   const buffer = Buffer.from(await file.arrayBuffer());
   const asLatin = buffer.toString("latin1");
   const strings = asLatin.match(/\((?:\\.|[^\\)]){2,80}\)/g) ?? [];
@@ -120,15 +128,38 @@ async function extractPdfHint(file: File): Promise<string> {
     )
     .filter((s) => /[\u4e00-\u9fffA-Za-z0-9]/.test(s));
   if (cleaned.length < 3) {
-    return (
-      "（PDF 未能可靠提取文字。若是抖音/后台截图型 PDF，请改传 PNG/JPG 截图或导出 CSV 后再试。）"
-    );
+    return "（PDF 未能可靠提取文字。请改传 PNG/JPG 截图或导出 CSV 后再试。）";
   }
   return truncate(cleaned.slice(0, 200).join("\n"));
 }
 
+async function resolveImageVisionUrl(
+  file: File,
+  mime: string,
+  publicBaseUrl?: string,
+): Promise<string> {
+  const normalized = withResolvedMime(file, mime);
+
+  // Prefer public media URL so Groq fetches the image (avoids huge base64 JSON).
+  // 优先公开媒体地址，让 Groq 自行拉取图片，避免巨型 base64 JSON。
+  if (publicBaseUrl) {
+    const relative = await persistAdminImage(normalized);
+    return `${publicBaseUrl.replace(/\/$/, "")}${relative}`;
+  }
+
+  if (normalized.size > MAX_BASE64_IMAGE_BYTES) {
+    throw new AttachmentError(
+      `图片「${file.name}」较大，且未配置站点公网地址。请在 Render 设置 NEXT_PUBLIC_SITE_URL=https://qingyi.onrender.com，或压缩到约 1.5MB 内再传`,
+    );
+  }
+
+  const buffer = Buffer.from(await normalized.arrayBuffer());
+  return `data:${mime};base64,${buffer.toString("base64")}`;
+}
+
 export async function parseAssistantAttachments(
   files: File[],
+  options?: { publicBaseUrl?: string },
 ): Promise<ParsedAttachment[]> {
   if (files.length > MAX_FILES) {
     throw new AttachmentError(`一次最多上传 ${MAX_FILES} 个文件`);
@@ -145,7 +176,10 @@ export async function parseAssistantAttachments(
       throw new AttachmentError(`「${file.name}」超过 25MB 限制`);
     }
 
-    const mime = file.type || "application/octet-stream";
+    const mime =
+      resolveMediaMime(file.type, file.name) ||
+      file.type ||
+      "application/octet-stream";
     const kind = detectKind(mime, file.name);
     if (kind === "reject") {
       throw new AttachmentError(
@@ -156,20 +190,23 @@ export async function parseAssistantAttachments(
     if (kind === "image") {
       if (file.size > MAX_IMAGE_BYTES) {
         throw new AttachmentError(
-          `图片「${file.name}」过大（视觉识别限 8MB），请压缩后重试`,
+          `图片「${file.name}」过大（限 8MB），请压缩后重试`,
         );
       }
       imageCount += 1;
       if (imageCount > MAX_IMAGES) {
         throw new AttachmentError(`一次最多识别 ${MAX_IMAGES} 张图片`);
       }
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
+      const visionUrl = await resolveImageVisionUrl(
+        file,
+        mime,
+        options?.publicBaseUrl,
+      );
       parsed.push({
         name: file.name,
         kind: "image",
         mimeType: mime,
-        imageDataUrl: dataUrl,
+        imageDataUrl: visionUrl,
       });
       continue;
     }
@@ -189,7 +226,10 @@ export async function parseAssistantAttachments(
       (DOCX_MIME.has(mime) || file.name.toLowerCase().endsWith(".docx"))
     ) {
       text = await extractDocx(buffer);
-    } else if (mime === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+    } else if (
+      mime === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf")
+    ) {
       text = await extractPdfHint(file);
     } else {
       text = buffer.toString("utf8");
@@ -216,7 +256,9 @@ export function attachmentsToPromptBlocks(
     const n = index + 1;
     if (item.kind === "image" && item.imageDataUrl) {
       imageUrls.push(item.imageDataUrl);
-      textParts.push(`[附件 ${n}] 图片：${item.name}（见下方第 ${imageUrls.length} 张图）`);
+      textParts.push(
+        `[附件 ${n}] 图片：${item.name}（见下方第 ${imageUrls.length} 张图）`,
+      );
     } else {
       textParts.push(
         `[附件 ${n}] ${item.kind === "table" ? "表格" : "文档"}：${item.name}\n\`\`\`\n${item.text ?? ""}\n\`\`\``,
