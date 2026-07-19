@@ -30,7 +30,7 @@ export function BrandLogo({
     <img
       src={SRC[variant]}
       alt="青意传媒 Qingyi Media"
-      className={cn("h-auto w-auto", className)}
+      className={cn("block h-auto w-auto max-w-full", className)}
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
     />
@@ -41,7 +41,11 @@ export function BrandLogo({
   }
 
   return (
-    <Link href={href} className="inline-flex items-center" aria-label="返回首页">
+    <Link
+      href={href}
+      className="inline-flex shrink-0 items-center"
+      aria-label="返回首页"
+    >
       {image}
     </Link>
   );

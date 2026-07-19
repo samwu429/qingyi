@@ -14,7 +14,7 @@ export function SiteFooter() {
         <div className="md:col-span-2">
           <BrandLogo
             variant="onDark"
-            className="h-10 w-auto max-w-[280px] object-contain object-left"
+            className="h-11 w-auto max-w-[min(300px,85vw)] object-contain object-left sm:h-12"
           />
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
             {siteConfig.description}
