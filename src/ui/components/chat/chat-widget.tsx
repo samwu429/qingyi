@@ -316,19 +316,32 @@ export function ChatWidget() {
           zIndex: 50,
         }}
       >
-        <span className="chat-orb__glyph">{open ? "×" : "青"}</span>
+        {open ? (
+          <span className="chat-orb__close" aria-hidden>
+            ×
+          </span>
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- brand mark from /public
+          <img
+            src="/brand/QingyiMedia_Mark.svg"
+            alt=""
+            className="chat-orb__mark"
+            draggable={false}
+          />
+        )}
       </button>
 
       {open ? (
         <div className="chat-panel" style={panelStyle(pos, open)}>
           <header className="flex items-center gap-3 border-b border-mist-100/10 bg-ink-950 px-4 py-3">
             <span className="chat-orb-mini" aria-hidden>
-              青
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/QingyiMedia_Mark.svg" alt="" draggable={false} />
             </span>
             <div className="leading-tight">
               <p className="text-sm font-semibold text-mist-100">青意小助手</p>
               <p className="text-[11px] text-mist-400">
-                按住球体可拖到任意位置，松手靠左/右吸附
+                按住可拖到任意位置，松手靠左/右吸附
               </p>
             </div>
           </header>
