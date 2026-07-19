@@ -83,11 +83,9 @@ export const siteContentRegistry = {
       heroSecondaryHref: "/streamers",
       heroImageUrl: "",
       stats: [
-        // Creator count + monthly live hours are overwritten on the public home
-        // from live DB data; placeholders only matter before first render/seed.
-        // 「签约创作者」「每月开播时长」在前台会被数据库实时值覆盖；占位仅用于首屏/种子。
-        { label: "签约创作者", value: "0" },
-        { label: "每月开播时长", value: "0h" },
+        // Creator count + monthly live hours are injected on the public home from
+        // live DB data and are not editable here.
+        // 「签约创作者」「每月开播时长」由前台按数据库实时注入，不在此编辑。
         { label: "覆盖内容平台", value: "10+" },
         { label: "内容 IP 合作", value: "持续增长" },
       ],

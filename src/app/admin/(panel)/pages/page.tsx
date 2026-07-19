@@ -7,6 +7,9 @@ import { JoinEditor } from "@/ui/components/admin/pages/join-editor";
 import { siteContentService } from "@/domain/site/site-content.service";
 import { saveSiteContentAction } from "@/app/admin/_actions/site-content.actions";
 import type { SiteContentKey } from "@/domain/site/site-content.types";
+import { streamerService } from "@/domain/streamers/streamer.service";
+import { metricService } from "@/domain/metrics/metric.service";
+import { currentMonthRange } from "@/domain/site/home-live-stats";
 import { cn } from "@/lib/ui/cn";
 
 export const dynamic = "force-dynamic";
@@ -70,11 +73,24 @@ export default async function AdminPagesPage({
 // 加载当前标签页对应内容并渲染其专属编辑器。
 async function SectionEditor({ activeKey }: { activeKey: SiteContentKey }) {
   if (activeKey === "home") {
-    const value = await siteContentService.get("home");
+    const month = currentMonthRange();
+    const [value, streamerStats, monthlyLiveHours] = await Promise.all([
+      siteContentService.get("home"),
+      streamerService.stats().catch(() => ({
+        total: 0,
+        published: 0,
+        featured: 0,
+      })),
+      metricService.getLiveHoursBetween(month.from, month.to).catch(() => 0),
+    ]);
     return (
       <HomeEditor
         action={saveSiteContentAction.bind(null, "home")}
         value={value}
+        liveStats={{
+          publishedCreators: streamerStats.published,
+          monthlyLiveHours,
+        }}
       />
     );
   }

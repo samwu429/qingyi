@@ -8,34 +8,48 @@ import { SaveBar } from "@/ui/components/admin/pages/save-bar";
 import { initialActionResult } from "@/app/admin/_actions/action-result";
 import type { ActionResult } from "@/app/admin/_actions/action-result";
 import type { HomeContent } from "@/domain/site/site-content.types";
+import {
+  stripAutoManagedHomeStats,
+  type LiveHomeStatValues,
+} from "@/domain/site/home-live-stats";
 
 type SaveAction = (
   prev: ActionResult,
   formData: FormData,
 ) => Promise<ActionResult>;
 
-// Editor for the home page hero, statistics, and highlight cards. The full
-// content object is held in local state and submitted as a single JSON payload.
-// 首页主视觉、统计与亮点卡片的编辑器。完整内容对象存于本地状态，以单个 JSON 载荷提交。
+// Editor for the home page hero, manual statistics, and highlight cards.
+// Creator count + monthly live hours are read-only previews of live DB data.
+// 首页主视觉、手工统计与亮点编辑器。签约创作者 / 每月开播时长只读展示实时数据。
 export function HomeEditor({
   action,
   value,
+  liveStats,
 }: {
   action: SaveAction;
   value: HomeContent;
+  liveStats: LiveHomeStatValues;
 }) {
   const [state, formAction, pending] = useActionState(
     action,
     initialActionResult,
   );
-  const [content, setContent] = useState<HomeContent>(value);
+  const [content, setContent] = useState<HomeContent>(() => ({
+    ...value,
+    stats: stripAutoManagedHomeStats(value.stats),
+  }));
 
   const set = <K extends keyof HomeContent>(key: K, next: HomeContent[K]) =>
     setContent((prev) => ({ ...prev, [key]: next }));
 
+  const payload: HomeContent = {
+    ...content,
+    stats: stripAutoManagedHomeStats(content.stats),
+  };
+
   return (
     <form action={formAction} className="space-y-8">
-      <input type="hidden" name="payload" value={JSON.stringify(content)} />
+      <input type="hidden" name="payload" value={JSON.stringify(payload)} />
 
       <section className="space-y-5">
         <h2 className="text-lg font-bold text-mist-100">主视觉</h2>
@@ -92,12 +106,38 @@ export function HomeEditor({
 
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-mist-100">数据统计</h2>
+
+        <div className="border border-mist-100/10 bg-ink-950/[0.02] p-4">
+          <p className="text-xs font-medium text-mist-300">自动联动（不可编辑）</p>
+          <p className="mt-1 text-xs text-mist-400">
+            与前台首页同步：已发布主播数、本月运营数据中的开播总时长。改主播状态或上传开播时长后自动更新。
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="border border-mist-100/10 bg-white px-4 py-3">
+              <p className="text-xs text-mist-400">签约创作者</p>
+              <p className="mt-1 font-display text-2xl font-bold text-jade-500">
+                {liveStats.publishedCreators}
+              </p>
+            </div>
+            <div className="border border-mist-100/10 bg-white px-4 py-3">
+              <p className="text-xs text-mist-400">每月开播时长</p>
+              <p className="mt-1 font-display text-2xl font-bold text-jade-500">
+                {liveStats.monthlyLiveHours <= 0
+                  ? "0h"
+                  : liveStats.monthlyLiveHours < 10
+                    ? `${liveStats.monthlyLiveHours.toFixed(1).replace(/\.0$/, "")}h`
+                    : `${Math.round(liveStats.monthlyLiveHours)}h`}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <p className="text-xs text-mist-400">
-          标签为「签约创作者」「每月开播时长」（或含「开播时长」）时，前台数值会按后台实时计算：已发布主播数、本月上传运营数据的开播总时长。其它统计项仍用下方填写的数值。
+          下方仅编辑其它展示项（如覆盖平台）。请勿再添加「签约创作者 / 开播时长」类标签，保存时会自动剔除。
         </p>
         <RepeatableList
           items={content.stats}
-          onChange={(next) => set("stats", next)}
+          onChange={(next) => set("stats", stripAutoManagedHomeStats(next))}
           createItem={() => ({ label: "", value: "" })}
           addLabel="添加统计项"
           renderRow={(item, update) => (
@@ -105,12 +145,12 @@ export function HomeEditor({
               <TextInput
                 value={item.value}
                 onChange={(e) => update({ value: e.target.value })}
-                placeholder="数值，如 120+"
+                placeholder="数值，如 10+"
               />
               <TextInput
                 value={item.label}
                 onChange={(e) => update({ label: e.target.value })}
-                placeholder="标签，如 签约创作者"
+                placeholder="标签，如 覆盖内容平台"
               />
             </div>
           )}

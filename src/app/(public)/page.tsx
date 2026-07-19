@@ -9,7 +9,7 @@ import { streamerService } from "@/domain/streamers/streamer.service";
 import { postService } from "@/domain/blog/post.service";
 import { metricService } from "@/domain/metrics/metric.service";
 import {
-  applyLiveHomeStats,
+  buildPublicHomeStats,
   currentMonthRange,
 } from "@/domain/site/home-live-stats";
 
@@ -35,7 +35,7 @@ export default async function HomePage() {
       metricService.getLiveHoursBetween(month.from, month.to).catch(() => 0),
     ]);
 
-  const stats = applyLiveHomeStats(home.stats, {
+  const stats = buildPublicHomeStats(home.stats, {
     publishedCreators: streamerStats.published,
     monthlyLiveHours,
   });

@@ -7,6 +7,7 @@ import {
   type JoinContent,
   type SiteContentKey,
 } from "@/domain/site/site-content.types";
+import { stripAutoManagedHomeStats } from "@/domain/site/home-live-stats";
 
 // Drop blank repeatable rows so an accidental "add" in the admin editors does
 // not persist empty cards or create duplicate React keys on the public site.
@@ -20,8 +21,10 @@ function sanitizeContent<K extends SiteContentKey>(
     const home = value as HomeContent;
     return {
       ...home,
-      stats: home.stats.filter(
-        (item) => item.label.trim() || item.value.trim(),
+      // Drop auto stats so CMS never re-stores values that front always computes.
+      // 去掉自动统计项，避免 CMS 再存一份前台本就会实时计算的数值。
+      stats: stripAutoManagedHomeStats(
+        home.stats.filter((item) => item.label.trim() || item.value.trim()),
       ),
       highlights: home.highlights.filter(
         (item) => item.title.trim() || item.description.trim(),
