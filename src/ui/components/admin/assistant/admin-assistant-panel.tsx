@@ -27,7 +27,7 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
     {
       role: "assistant",
       content:
-        "我是后台运营助手。可上传抖音数据截图、Excel/CSV、Word 等，让我直接写入本站数据库（主播运营数据、主播档案、资讯、留言、页面文案）。删除操作需你再说「确认删除」。",
+        "我是后台运营助手。可上传抖音数据截图（本站会先识别成文字）、Excel/CSV、Word 等，直接写入本站数据库。删除操作需你再说「确认删除」。",
     },
   ]);
   const [input, setInput] = useState("");
@@ -148,7 +148,7 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
           后台 AI 助手
         </h2>
         <p className="mt-1 text-xs text-mist-400">
-          上传截图、Excel/CSV、Word 等，说明意图（如「写入运营数据」）。创建/更新会直接入库；删除需回复「确认删除」。
+          上传截图（自动转文字）、Excel/CSV、Word 等，说明意图（如「写入运营数据」）。创建/更新会直接入库；删除需回复「确认删除」。
         </p>
       </div>
 

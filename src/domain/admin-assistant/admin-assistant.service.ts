@@ -1,7 +1,6 @@
 import { groqConfig } from "@/config/env";
 import {
   groqChatCompletion,
-  type ChatContentPart,
   type ChatMessage,
 } from "@/infrastructure/ai/groq";
 import {
@@ -30,7 +29,8 @@ export interface AdminAssistantResult {
 function buildSystemPrompt(): string {
   return [
     "你是「青意传媒」后台运营助手，只服务已登录的管理员。",
-    "你可以阅读用户上传的截图、表格、文档，并通过工具直接读写本站数据库。",
+    "你可以阅读用户上传的表格、文档，以及截图经本站 OCR 后的文字，并通过工具直接读写本站数据库。",
+    "注意：截图不会以图片形式发给你，只会收到 OCR 文字；OCR 可能有错字，请结合上下文推断数字字段。",
     "",
     "核心能力：",
     "- 运营数据 StreamerMetric：period、followers、income（元）、liveMinutes（开播分钟）、viewers、comments、likes、yinlang（音浪）",
@@ -39,7 +39,7 @@ function buildSystemPrompt(): string {
     "硬性规则：",
     "1. 写入运营数据前，必须先调用 list_streamers，用 id 精确匹配主播；名字不确定时向用户确认，不要猜。",
     "2. 用户意图明确（如「入库」「上传」「写入」）且数字可读时，直接调用 create_metric 等工具写入，不要只给草稿。",
-    "3. 截图/表格读不清或互相矛盾时，先提问，不要瞎写。",
+    "3. OCR/表格读不清或互相矛盾时，先提问，不要瞎写。",
     "4. 删除类操作（delete_metric）必须等用户明确说「确认删除」后，再以 confirm=true 调用；否则拒绝。",
     "5. income 单位是整数元；若截图是「万」请换算成元。粉丝数去掉逗号/「万」后换算为整数。开播时长换算为分钟整数。",
     "6. 用简体中文回复；写完后用简短列表说明本次实际执行了什么（成功/失败）。",
@@ -57,27 +57,18 @@ function userWantsDeleteConfirm(text: string): boolean {
 function buildUserContent(
   message: string,
   attachments: ParsedAttachment[],
-): string | ChatContentPart[] {
-  const { textBlock, imageUrls } = attachmentsToPromptBlocks(attachments);
-  const text = [
+): string {
+  const { textBlock } = attachmentsToPromptBlocks(attachments);
+  const hasOcr = attachments.some((a) => a.kind === "image" && a.text);
+  return [
     message.trim() || "请根据附件处理后台数据。",
     textBlock,
-    imageUrls.length
-      ? "请先阅读截图中的直播数据（粉丝、开播时长、观众、评论、点赞、音浪、收入等），再调用工具写入。"
+    hasOcr
+      ? "请根据 OCR 文字提取直播数据（粉丝、开播时长、观众、评论、点赞、音浪、收入等），再调用工具写入。"
       : "",
   ]
     .filter(Boolean)
     .join("\n\n");
-
-  if (imageUrls.length === 0) {
-    return text;
-  }
-
-  const parts: ChatContentPart[] = [{ type: "text", text }];
-  for (const url of imageUrls) {
-    parts.push({ type: "image_url", image_url: { url } });
-  }
-  return parts;
 }
 
 async function runToolLoop(
@@ -135,9 +126,8 @@ async function runToolLoop(
   };
 }
 
-// One admin turn. With images, use the vision model + tools in a single loop
-// (qwen supports both) to cut free-tier request count vs a separate OCR pass.
-// 一轮后台助手。有图时用视觉模型直接带工具循环（qwen 支持），比「先识图再写库」少打一倍请求，减轻限流。
+// One admin turn. Screenshots arrive as OCR text; always use the text+tools model.
+// 一轮后台助手。截图已是 OCR 文字，统一走文本+工具模型，不再调用视觉接口。
 export async function runAdminAssistant(options: {
   message: string;
   history?: AdminChatTurn[];
@@ -145,7 +135,6 @@ export async function runAdminAssistant(options: {
 }): Promise<AdminAssistantResult> {
   const attachments = options.attachments ?? [];
   const history = options.history ?? [];
-  const hasImages = attachments.some((a) => a.kind === "image");
 
   const ctx: AdminToolContext = {
     deleteConfirmed: userWantsDeleteConfirm(options.message),
@@ -167,9 +156,6 @@ export async function runAdminAssistant(options: {
     content: buildUserContent(options.message, attachments),
   });
 
-  const model = hasImages
-    ? groqConfig.visionModel
-    : groqConfig.adminModel || groqConfig.model;
-
+  const model = groqConfig.adminModel || groqConfig.model;
   return runToolLoop(messages, ctx, model);
 }

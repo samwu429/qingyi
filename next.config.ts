@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // 更小的运行时镜像，便于 Docker / 亚洲主机部署。
   output: "standalone",
   poweredByHeader: false,
+  // Keep native / worker-based packages out of the Next bundler.
+  // 原生与 worker 类包不要被 Next 打包进 bundle。
+  serverExternalPackages: ["sharp", "tesseract.js"],
   async headers() {
     return [
       {

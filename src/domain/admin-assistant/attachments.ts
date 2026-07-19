@@ -1,22 +1,16 @@
 import * as XLSX from "xlsx";
 import mammoth from "mammoth";
-import { compressImageForVision } from "@/infrastructure/media/upload/compress-for-vision";
-import { persistAdminImage } from "@/infrastructure/media/upload/persist-image";
+import { ocrImageToText } from "@/infrastructure/media/upload/ocr-image";
 import {
   resolveMediaMime,
-  withResolvedMime,
 } from "@/infrastructure/media/upload/mime";
 
-// Parse admin-assistant uploads into text excerpts and/or vision image URLs.
-// Images prefer a public /api/media URL (smaller Groq payload); base64 is only
-// a fallback for tiny files when no public site origin is available.
-// 后台助手附件解析：图片优先落库后用公开 /api/media 地址（减小 Groq 载荷）；
-// 无站点公网地址时，仅小图才回退 base64。
+// Parse admin-assistant uploads into text for the LLM. Screenshots are OCR'd
+// locally (no Groq vision) so free-tier size / rate limits are much safer.
+// 后台助手附件解析为纯文本。截图在本机 OCR，不再走 Groq 视觉，减轻体积与限流。
 
 const MAX_BYTES = 25 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-/** Base64 fallback must stay well under Groq's 20MB request ceiling. */
-const MAX_BASE64_IMAGE_BYTES = 1_500_000;
 const MAX_IMAGES = 4;
 const MAX_TEXT_CHARS = 40_000;
 const MAX_FILES = 12;
@@ -56,8 +50,6 @@ export interface ParsedAttachment {
   name: string;
   kind: "image" | "text" | "table" | "document";
   mimeType: string;
-  /** Public https URL or data URL for Groq vision. */
-  imageDataUrl?: string;
   text?: string;
 }
 
@@ -134,38 +126,29 @@ async function extractPdfHint(file: File): Promise<string> {
   return truncate(cleaned.slice(0, 200).join("\n"));
 }
 
-async function resolveImageVisionUrl(
-  file: File,
-  mime: string,
-  publicBaseUrl?: string,
-): Promise<string> {
-  const compressed = await compressImageForVision(file, mime);
-  const normalized = withResolvedMime(compressed.file, compressed.mime);
-
-  // Prefer public media URL so Groq fetches the image (avoids huge base64 JSON).
-  // 优先公开媒体地址，让 Groq 自行拉取图片，避免巨型 base64 JSON。
-  if (publicBaseUrl) {
-    const relative = await persistAdminImage(normalized);
-    // Cloudinary already returns an absolute URL; Postgres paths are relative.
-    if (/^https?:\/\//i.test(relative)) {
-      return relative;
+async function ocrScreenshot(file: File): Promise<string> {
+  try {
+    const text = await ocrImageToText(file);
+    if (text.replace(/\s+/g, "").length < 4) {
+      throw new AttachmentError(
+        `截图「${file.name}」未能识别出文字。请换更清晰的截图，或直接粘贴数字/上传 Excel、CSV`,
+      );
     }
-    return `${publicBaseUrl.replace(/\/$/, "")}${relative}`;
-  }
-
-  if (normalized.size > MAX_BASE64_IMAGE_BYTES) {
+    return truncate(text);
+  } catch (error) {
+    if (error instanceof AttachmentError) {
+      throw error;
+    }
+    console.error("ocrScreenshot failed", error);
     throw new AttachmentError(
-      `图片「${file.name}」较大，且未配置站点公网地址。请在 Render 设置 NEXT_PUBLIC_SITE_URL=https://qingyi.onrender.com，或压缩到约 1.5MB 内再传`,
+      `截图「${file.name}」文字识别失败。请稍后重试，或改传 Excel/CSV / 直接粘贴数据`,
     );
   }
-
-  const buffer = Buffer.from(await normalized.arrayBuffer());
-  return `data:${compressed.mime};base64,${buffer.toString("base64")}`;
 }
 
 export async function parseAssistantAttachments(
   files: File[],
-  options?: { publicBaseUrl?: string },
+  _options?: { publicBaseUrl?: string },
 ): Promise<ParsedAttachment[]> {
   if (files.length > MAX_FILES) {
     throw new AttachmentError(`一次最多上传 ${MAX_FILES} 个文件`);
@@ -203,16 +186,12 @@ export async function parseAssistantAttachments(
       if (imageCount > MAX_IMAGES) {
         throw new AttachmentError(`一次最多识别 ${MAX_IMAGES} 张图片`);
       }
-      const visionUrl = await resolveImageVisionUrl(
-        file,
-        mime,
-        options?.publicBaseUrl,
-      );
+      const text = await ocrScreenshot(file);
       parsed.push({
         name: file.name,
         kind: "image",
         mimeType: mime,
-        imageDataUrl: visionUrl,
+        text,
       });
       continue;
     }
@@ -256,14 +235,12 @@ export function attachmentsToPromptBlocks(
   attachments: ParsedAttachment[],
 ): { textBlock: string; imageUrls: string[] } {
   const textParts: string[] = [];
-  const imageUrls: string[] = [];
 
   attachments.forEach((item, index) => {
     const n = index + 1;
-    if (item.kind === "image" && item.imageDataUrl) {
-      imageUrls.push(item.imageDataUrl);
+    if (item.kind === "image") {
       textParts.push(
-        `[附件 ${n}] 图片：${item.name}（见下方第 ${imageUrls.length} 张图）`,
+        `[附件 ${n}] 截图 OCR「${item.name}」：\n\`\`\`\n${item.text ?? ""}\n\`\`\``,
       );
     } else {
       textParts.push(
@@ -274,8 +251,8 @@ export function attachmentsToPromptBlocks(
 
   return {
     textBlock: textParts.length
-      ? `用户上传了以下附件：\n\n${textParts.join("\n\n")}`
+      ? `用户上传了以下附件（截图已在本站识别为文字，请据此解析数据并调用工具）：\n\n${textParts.join("\n\n")}`
       : "",
-    imageUrls,
+    imageUrls: [],
   };
 }
