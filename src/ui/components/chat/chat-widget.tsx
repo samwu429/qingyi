@@ -102,19 +102,15 @@ export function ChatWidget() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-label={open ? "关闭在线咨询" : "打开在线咨询"}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-jade-500 text-white shadow-lg transition-transform hover:scale-105 hover:bg-jade-600"
+        className={`chat-orb fixed bottom-5 right-5 z-50${open ? " chat-orb--open" : ""}`}
       >
-        {open ? (
-          <span className="text-2xl leading-none">×</span>
-        ) : (
-          <span className="font-display text-lg font-bold">青</span>
-        )}
+        <span className="chat-orb__glyph">{open ? "×" : "青"}</span>
       </button>
 
       {open ? (
         <div className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[calc(100vh-8rem)] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden border border-mist-100/15 bg-white shadow-2xl">
           <header className="flex items-center gap-3 border-b border-mist-100/10 bg-ink-950 px-4 py-3">
-            <span className="grid h-8 w-8 place-items-center bg-jade-500 font-display text-sm font-bold text-white">
+            <span className="chat-orb-mini" aria-hidden>
               青
             </span>
             <div className="leading-tight">
