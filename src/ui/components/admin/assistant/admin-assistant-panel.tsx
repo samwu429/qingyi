@@ -1,6 +1,12 @@
 "use client";
 
-import { useRef, useState, type DragEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+  type FormEvent,
+} from "react";
 
 type ChatRole = "user" | "assistant";
 
@@ -19,36 +25,147 @@ interface AssistantMessage extends ChatMessage {
   actions?: ToolAction[];
 }
 
+type OcrStatus = "pending" | "done" | "error" | "n/a";
+
+interface PendingAttachment {
+  id: string;
+  file: File;
+  isImage: boolean;
+  ocrStatus: OcrStatus;
+  ocrText?: string;
+  ocrError?: string;
+  mimeType?: string;
+}
+
+function isImageFile(file: File): boolean {
+  if (file.type.startsWith("image/")) return true;
+  return /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+}
+
+function fileId(file: File): string {
+  return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
 // Admin-home AI console: multi-file upload + tool-backed chat that can write
 // streamer metrics / roster / posts from screenshots and tables.
-// 后台首页 AI 控制台：多文件上传 + 可写库的工具对话，支持从截图/表格写入运营数据等。
+// OCR starts as soon as a screenshot is selected so send mostly waits on AI.
+// 后台首页 AI 控制台：选中截图即开始 OCR，发送时主要只等 AI 写库。
 export function AdminAssistantPanel({ configured }: { configured: boolean }) {
   const [messages, setMessages] = useState<AssistantMessage[]>([
     {
       role: "assistant",
       content:
-        "我是后台运营助手。可上传抖音数据截图（本站会先识别成文字）、Excel/CSV、Word 等，直接写入本站数据库。删除操作需你再说「确认删除」。",
+        "我是后台运营助手。可上传抖音数据截图（选中后会立刻转文字）、Excel/CSV、Word 等，直接写入本站数据库。删除操作需你再说「确认删除」。",
     },
   ]);
   const [input, setInput] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const ocrJobsRef = useRef(new Map<string, Promise<void>>());
+  const ocrResultsRef = useRef(
+    new Map<
+      string,
+      { ok: true; text: string; mimeType?: string } | { ok: false; error: string }
+    >(),
+  );
+
+  useEffect(() => {
+    if (!configured) return;
+    void fetch("/api/admin/assistant/ocr", { method: "GET" }).catch(() => {
+      /* warm is best-effort */
+    });
+  }, [configured]);
+
+  const runOcr = (item: PendingAttachment) => {
+    if (!item.isImage || ocrJobsRef.current.has(item.id)) {
+      return;
+    }
+
+    const job = (async () => {
+      try {
+        const body = new FormData();
+        body.append("file", item.file);
+        const response = await fetch("/api/admin/assistant/ocr", {
+          method: "POST",
+          body,
+        });
+        const data = (await response.json()) as {
+          text?: string;
+          mimeType?: string;
+          error?: string;
+        };
+        if (!response.ok || !data.text) {
+          throw new Error(data.error ?? "识别失败");
+        }
+        ocrResultsRef.current.set(item.id, {
+          ok: true,
+          text: data.text,
+          mimeType: data.mimeType,
+        });
+        setAttachments((prev) =>
+          prev.map((entry) =>
+            entry.id === item.id
+              ? {
+                  ...entry,
+                  ocrStatus: "done",
+                  ocrText: data.text,
+                  mimeType: data.mimeType,
+                }
+              : entry,
+          ),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "识别失败";
+        ocrResultsRef.current.set(item.id, { ok: false, error: message });
+        setAttachments((prev) =>
+          prev.map((entry) =>
+            entry.id === item.id
+              ? { ...entry, ocrStatus: "error", ocrError: message }
+              : entry,
+          ),
+        );
+      } finally {
+        ocrJobsRef.current.delete(item.id);
+      }
+    })();
+
+    ocrJobsRef.current.set(item.id, job);
+  };
 
   const addFiles = (incoming: FileList | File[]) => {
     const next = Array.from(incoming);
-    setFiles((prev) => {
+    const added: PendingAttachment[] = [];
+
+    setAttachments((prev) => {
       const merged = [...prev];
       for (const file of next) {
-        if (!merged.some((f) => f.name === file.name && f.size === file.size)) {
-          merged.push(file);
+        const id = fileId(file);
+        if (merged.some((item) => item.id === id)) {
+          continue;
         }
+        const item: PendingAttachment = {
+          id,
+          file,
+          isImage: isImageFile(file),
+          ocrStatus: isImageFile(file) ? "pending" : "n/a",
+        };
+        merged.push(item);
+        added.push(item);
       }
       return merged.slice(0, 12);
     });
+
+    window.setTimeout(() => {
+      for (const item of added.slice(0, 12)) {
+        if (item.isImage) {
+          runOcr(item);
+        }
+      }
+    }, 0);
   };
 
   const onDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -59,14 +176,43 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
     }
   };
 
+  const ocrBusy = attachments.some((item) => item.ocrStatus === "pending");
+  const ocrFailed = attachments.some((item) => item.ocrStatus === "error");
+
   const send = async (event?: FormEvent) => {
     event?.preventDefault();
-    if (pending || (!input.trim() && files.length === 0)) {
+    if (pending || (!input.trim() && attachments.length === 0)) {
+      return;
+    }
+    if (ocrFailed) {
+      setError("有截图识别失败，请移除后重试或改传 Excel/CSV");
       return;
     }
 
+    const snapshot = [...attachments];
+    setPending(true);
+    setError(null);
+    if (ocrJobsRef.current.size > 0) {
+      await Promise.all([...ocrJobsRef.current.values()]);
+    }
+
+    for (const item of snapshot) {
+      if (!item.isImage) continue;
+      const result = ocrResultsRef.current.get(item.id);
+      if (!result) {
+        setPending(false);
+        setError("截图仍在识别中，请稍候再发");
+        return;
+      }
+      if (!result.ok) {
+        setPending(false);
+        setError(result.error || "有截图识别失败，请移除后重试");
+        return;
+      }
+    }
+
     const userText = input.trim();
-    const attachedNames = files.map((f) => f.name);
+    const attachedNames = snapshot.map((item) => item.file.name);
     const display =
       userText +
       (attachedNames.length
@@ -80,16 +226,38 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
 
     setMessages((prev) => [...prev, { role: "user", content: display }]);
     setInput("");
-    setError(null);
-    setPending(true);
 
     const body = new FormData();
     body.append("message", userText || "请根据附件处理后台数据。");
     body.append("history", JSON.stringify(historyForApi));
-    for (const file of files) {
-      body.append("files", file);
+
+    const ocrAttachments = snapshot
+      .filter((item) => item.isImage)
+      .map((item) => {
+        const result = ocrResultsRef.current.get(item.id);
+        if (!result || !result.ok) {
+          throw new Error("截图识别未完成");
+        }
+        return {
+          name: item.file.name,
+          text: result.text,
+          mimeType: result.mimeType || item.file.type || "image/jpeg",
+        };
+      });
+    if (ocrAttachments.length) {
+      body.append("ocrAttachments", JSON.stringify(ocrAttachments));
     }
-    setFiles([]);
+
+    for (const item of snapshot) {
+      if (!item.isImage) {
+        body.append("files", item.file);
+      }
+    }
+
+    for (const item of snapshot) {
+      ocrResultsRef.current.delete(item.id);
+    }
+    setAttachments([]);
 
     try {
       const response = await fetch("/api/admin/assistant", {
@@ -148,7 +316,8 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
           后台 AI 助手
         </h2>
         <p className="mt-1 text-xs text-mist-400">
-          上传截图（自动转文字）、Excel/CSV、Word 等，说明意图（如「写入运营数据」）。创建/更新会直接入库；删除需回复「确认删除」。
+          上传截图后会立刻转文字（可边写说明边等），再发 Excel/CSV、Word
+          等。创建/更新会直接入库；删除需回复「确认删除」。
         </p>
       </div>
 
@@ -227,22 +396,33 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
             event.target.value = "";
           }}
         />
-        {files.length > 0 ? (
+        {attachments.length > 0 ? (
           <ul className="mt-3 space-y-1 text-left text-xs text-mist-300">
-            {files.map((file) => (
+            {attachments.map((item) => (
               <li
-                key={`${file.name}-${file.size}`}
+                key={item.id}
                 className="flex items-center justify-between gap-2"
               >
                 <span className="truncate">
-                  {file.name}（{(file.size / 1024).toFixed(0)} KB）
+                  {item.file.name}（{(item.file.size / 1024).toFixed(0)} KB）
+                  {item.ocrStatus === "pending"
+                    ? " · 识别中…"
+                    : item.ocrStatus === "done"
+                      ? " · 已转文字"
+                      : item.ocrStatus === "error"
+                        ? ` · 失败：${item.ocrError ?? "识别失败"}`
+                        : ""}
                 </span>
                 <button
                   type="button"
                   className="shrink-0 text-red-600 hover:underline"
-                  onClick={() =>
-                    setFiles((prev) => prev.filter((f) => f !== file))
-                  }
+                  onClick={() => {
+                    ocrResultsRef.current.delete(item.id);
+                    ocrJobsRef.current.delete(item.id);
+                    setAttachments((prev) =>
+                      prev.filter((entry) => entry.id !== item.id),
+                    );
+                  }}
                 >
                   移除
                 </button>
@@ -266,10 +446,20 @@ export function AdminAssistantPanel({ configured }: { configured: boolean }) {
         />
         <button
           type="submit"
-          disabled={pending || (!input.trim() && files.length === 0)}
+          disabled={
+            pending ||
+            ocrFailed ||
+            (!input.trim() && attachments.length === 0)
+          }
           className="shrink-0 bg-jade-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600 disabled:opacity-60"
         >
-          {pending ? "处理中…" : "发送"}
+          {pending
+            ? ocrBusy
+              ? "识别中…"
+              : "处理中…"
+            : ocrBusy
+              ? "识别中可先写说明"
+              : "发送"}
         </button>
       </form>
 

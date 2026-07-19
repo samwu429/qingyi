@@ -146,20 +146,50 @@ async function ocrScreenshot(file: File): Promise<string> {
   }
 }
 
+export interface PrecomputedOcrAttachment {
+  name: string;
+  text: string;
+  mimeType?: string;
+}
+
 export async function parseAssistantAttachments(
   files: File[],
-  _options?: { publicBaseUrl?: string },
+  options?: {
+    publicBaseUrl?: string;
+    /** OCR finished in the UI before send — skip re-OCR. */
+    precomputedOcr?: PrecomputedOcrAttachment[];
+  },
 ): Promise<ParsedAttachment[]> {
-  if (files.length > MAX_FILES) {
+  const precomputed = options?.precomputedOcr ?? [];
+  if (files.length + precomputed.length > MAX_FILES) {
     throw new AttachmentError(`一次最多上传 ${MAX_FILES} 个文件`);
   }
 
   const parsed: ParsedAttachment[] = [];
   let imageCount = 0;
 
-  for (const file of files) {
+  for (const item of precomputed) {
+    const text = truncate((item.text || "").trim());
+    if (text.replace(/\s+/g, "").length < 4) {
+      throw new AttachmentError(
+        `截图「${item.name}」未能识别出文字。请换更清晰的截图，或直接粘贴数字/上传 Excel、CSV`,
+      );
+    }
+    imageCount += 1;
+    if (imageCount > MAX_IMAGES) {
+      throw new AttachmentError(`一次最多识别 ${MAX_IMAGES} 张图片`);
+    }
+    parsed.push({
+      name: item.name || "screenshot.png",
+      kind: "image",
+      mimeType: item.mimeType || "image/jpeg",
+      text,
+    });
+  }
+
+  const fileJobs = files.map(async (file) => {
     if (!(file instanceof File) || file.size <= 0) {
-      continue;
+      return null;
     }
     if (file.size > MAX_BYTES) {
       throw new AttachmentError(`「${file.name}」超过 25MB 限制`);
@@ -182,18 +212,13 @@ export async function parseAssistantAttachments(
           `图片「${file.name}」过大（限 8MB），请压缩后重试`,
         );
       }
-      imageCount += 1;
-      if (imageCount > MAX_IMAGES) {
-        throw new AttachmentError(`一次最多识别 ${MAX_IMAGES} 张图片`);
-      }
       const text = await ocrScreenshot(file);
-      parsed.push({
+      return {
         name: file.name,
-        kind: "image",
+        kind: "image" as const,
         mimeType: mime,
         text,
-      });
-      continue;
+      };
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -220,12 +245,23 @@ export async function parseAssistantAttachments(
       text = buffer.toString("utf8");
     }
 
-    parsed.push({
+    return {
       name: file.name,
       kind,
       mimeType: mime,
       text: truncate(text.trim() || "(空文件)"),
-    });
+    };
+  });
+
+  for (const item of await Promise.all(fileJobs)) {
+    if (!item) continue;
+    if (item.kind === "image") {
+      imageCount += 1;
+      if (imageCount > MAX_IMAGES) {
+        throw new AttachmentError(`一次最多识别 ${MAX_IMAGES} 张图片`);
+      }
+    }
+    parsed.push(item);
   }
 
   return parsed;

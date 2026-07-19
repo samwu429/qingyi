@@ -5,6 +5,7 @@ import { GroqError } from "@/infrastructure/ai/groq";
 import {
   AttachmentError,
   parseAssistantAttachments,
+  type PrecomputedOcrAttachment,
 } from "@/domain/admin-assistant/attachments";
 import {
   runAdminAssistant,
@@ -60,6 +61,31 @@ function resolvePublicBaseUrl(request: Request): string | undefined {
   return undefined;
 }
 
+function parsePrecomputedOcr(
+  raw: FormDataEntryValue | null,
+): PrecomputedOcrAttachment[] {
+  if (typeof raw !== "string" || !raw.trim()) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed
+      .filter(
+        (item): item is PrecomputedOcrAttachment =>
+          typeof item === "object" &&
+          item !== null &&
+          typeof (item as PrecomputedOcrAttachment).name === "string" &&
+          typeof (item as PrecomputedOcrAttachment).text === "string",
+      )
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 export async function POST(request: Request) {
   const admin = await getCurrentAdmin();
   if (!admin) {
@@ -79,11 +105,12 @@ export async function POST(request: Request) {
     const message = typeof messageRaw === "string" ? messageRaw : "";
     const history = parseHistory(formData.get("history"));
 
+    const precomputedOcr = parsePrecomputedOcr(formData.get("ocrAttachments"));
     const files = formData
       .getAll("files")
       .filter((entry): entry is File => entry instanceof File && entry.size > 0);
 
-    if (!message.trim() && files.length === 0) {
+    if (!message.trim() && files.length === 0 && precomputedOcr.length === 0) {
       return NextResponse.json(
         { error: "请输入说明或上传至少一个文件" },
         { status: 400 },
@@ -93,6 +120,7 @@ export async function POST(request: Request) {
     const publicBaseUrl = resolvePublicBaseUrl(request);
     const attachments = await parseAssistantAttachments(files, {
       publicBaseUrl,
+      precomputedOcr,
     });
     const result = await runAdminAssistant({
       message: message.trim() || "请根据附件处理后台数据。",
