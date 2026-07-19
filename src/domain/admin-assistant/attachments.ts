@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import mammoth from "mammoth";
+import { compressImageForVision } from "@/infrastructure/media/upload/compress-for-vision";
 import { persistAdminImage } from "@/infrastructure/media/upload/persist-image";
 import {
   resolveMediaMime,
@@ -138,12 +139,17 @@ async function resolveImageVisionUrl(
   mime: string,
   publicBaseUrl?: string,
 ): Promise<string> {
-  const normalized = withResolvedMime(file, mime);
+  const compressed = await compressImageForVision(file, mime);
+  const normalized = withResolvedMime(compressed.file, compressed.mime);
 
   // Prefer public media URL so Groq fetches the image (avoids huge base64 JSON).
   // 优先公开媒体地址，让 Groq 自行拉取图片，避免巨型 base64 JSON。
   if (publicBaseUrl) {
     const relative = await persistAdminImage(normalized);
+    // Cloudinary already returns an absolute URL; Postgres paths are relative.
+    if (/^https?:\/\//i.test(relative)) {
+      return relative;
+    }
     return `${publicBaseUrl.replace(/\/$/, "")}${relative}`;
   }
 
@@ -154,7 +160,7 @@ async function resolveImageVisionUrl(
   }
 
   const buffer = Buffer.from(await normalized.arrayBuffer());
-  return `data:${mime};base64,${buffer.toString("base64")}`;
+  return `data:${compressed.mime};base64,${buffer.toString("base64")}`;
 }
 
 export async function parseAssistantAttachments(

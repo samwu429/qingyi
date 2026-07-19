@@ -90,7 +90,7 @@ function mapGroqFailure(status: number, detail: string): GroqError {
     lower.includes("request too large")
   ) {
     return new GroqError(
-      "图片或请求过大。请压缩截图后再传（建议单张 2MB 内），或配置 NEXT_PUBLIC_SITE_URL 以便走外链识图",
+      "图片或请求仍过大。请只传 1 张清晰截图（或裁掉无关区域）后重试；并确认 Render 已设置 NEXT_PUBLIC_SITE_URL=https://qingyi.onrender.com",
       400,
     );
   }
