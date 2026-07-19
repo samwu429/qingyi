@@ -4,6 +4,7 @@ import { SectionHeading } from "@/ui/components/primitives/section-heading";
 import { StreamerCard } from "@/ui/components/cards/streamer-card/streamer-card";
 import { PostCard } from "@/ui/components/cards/post-card/post-card";
 import { HomeHero } from "@/ui/components/home/home-hero/home-hero";
+import { ConvergenceVenn } from "@/ui/components/home/convergence-venn/convergence-venn";
 import { siteContentService } from "@/domain/site/site-content.service";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { postService } from "@/domain/blog/post.service";
@@ -68,6 +69,12 @@ export default async function HomePage() {
           </Container>
         </section>
       ) : null}
+
+      <section className="border-y border-mist-100/8 bg-white/70 py-20">
+        <Container>
+          <ConvergenceVenn />
+        </Container>
+      </section>
 
       {featuredStreamers.length > 0 ? (
         <section className="pb-20">
