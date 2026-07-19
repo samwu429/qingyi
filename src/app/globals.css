@@ -722,13 +722,11 @@ body {
   }
 
   .practice-grid__item {
+    /* Same inset on every column so the left rail matches the mid dividers. */
+    /* 每列左右留白一致，左侧竖线与中间分隔线节奏对齐。 */
     padding: 0.15rem 1.75rem 0.15rem 1.5rem;
     border-bottom: none;
     border-right: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
-  }
-
-  .practice-grid__item:first-child {
-    padding-left: 0;
   }
 
   .practice-grid__body {
