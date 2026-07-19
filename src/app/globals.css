@@ -781,8 +781,8 @@ body {
 }
 
 .convergence-venn__rings circle {
-  stroke: color-mix(in srgb, var(--color-mist-100) 48%, transparent);
-  stroke-width: 1.15;
+  stroke: color-mix(in srgb, var(--color-mist-100) 36%, transparent);
+  stroke-width: 1;
 }
 
 .convergence-venn__outer {
@@ -793,24 +793,30 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* Paper knockout under intersection type so arcs never bisect glyphs. */
+.convergence-venn__plate {
+  fill: var(--color-ink-950);
+  fill-opacity: 0.94;
+}
+
 .convergence-venn__pair {
   fill: var(--color-mist-100);
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .convergence-venn__core {
   fill: var(--color-mist-100);
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .convergence-venn__core-sub {
   fill: var(--color-jade-600);
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
 }

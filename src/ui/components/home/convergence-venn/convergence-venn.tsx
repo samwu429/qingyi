@@ -1,12 +1,40 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/ui/cn";
 
-// Compact three-circle diagram meant to sit beside other homepage content.
-// Outer rings keep the classic industry frame; lenses carry short Qingyi labels.
-// 紧凑三圈图，嵌在首页其他内容旁；外圈保留产业框架，交叉区用短词标青意落点。
+// Compact three-circle diagram. Intersection copy sits on paper plates so
+// circle arcs never cut through glyphs; plates sit at exclusive-lens centroids.
+// 紧凑三圈图：交叉文案落在纸色底板中心，避开交界弧线，保证不穿字。
 
 type ConvergenceVennProps = {
   className?: string;
 };
+
+function LabelPlate({
+  x,
+  y,
+  width,
+  height,
+  children,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  children: ReactNode;
+}) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect
+        className="convergence-venn__plate"
+        x={-width / 2}
+        y={-height / 2}
+        width={width}
+        height={height}
+      />
+      {children}
+    </g>
+  );
+}
 
 export function ConvergenceVenn({ className }: ConvergenceVennProps) {
   return (
@@ -29,69 +57,83 @@ export function ConvergenceVenn({ className }: ConvergenceVennProps) {
           </filter>
         </defs>
 
+        {/*
+          Geometry: A(320,200) B(230,335) C(410,335) r=142
+          Triple centroid ≈ (320, 290)
+          Exclusive-lens anchors pushed away from the triple so arcs miss the type.
+        */}
         <g filter="url(#venn-soft)">
-          <circle cx="320" cy="198" r="148" className="convergence-venn__disc" />
-          <circle cx="228" cy="338" r="148" className="convergence-venn__disc" />
-          <circle cx="412" cy="338" r="148" className="convergence-venn__disc" />
+          <circle cx="320" cy="200" r="142" className="convergence-venn__disc" />
+          <circle cx="230" cy="335" r="142" className="convergence-venn__disc" />
+          <circle cx="410" cy="335" r="142" className="convergence-venn__disc" />
         </g>
 
         <g className="convergence-venn__rings" fill="none">
-          <circle cx="320" cy="198" r="148" />
-          <circle cx="228" cy="338" r="148" />
-          <circle cx="412" cy="338" r="148" />
+          <circle cx="320" cy="200" r="142" />
+          <circle cx="230" cy="335" r="142" />
+          <circle cx="410" cy="335" r="142" />
         </g>
 
-        {/* Outer industry labels */}
+        {/* Outer industry labels — clear of the rings */}
         <g className="convergence-venn__outer">
-          <text x="320" y="78" textAnchor="middle">
+          <text x="320" y="72" textAnchor="middle">
             <tspan x="320" dy="0">
               Communications
             </tspan>
-            <tspan x="320" dy="16">
+            <tspan x="320" dy="15">
               Networks
             </tspan>
           </text>
-          <text x="118" y="430" textAnchor="middle">
-            <tspan x="118" dy="0">
+          <text x="108" y="448" textAnchor="middle">
+            <tspan x="108" dy="0">
               Computing /
             </tspan>
-            <tspan x="118" dy="16">
+            <tspan x="108" dy="15">
               Information Technology
             </tspan>
           </text>
-          <text x="522" y="430" textAnchor="middle">
-            <tspan x="522" dy="0">
+          <text x="532" y="448" textAnchor="middle">
+            <tspan x="532" dy="0">
               Content
             </tspan>
-            <tspan x="522" dy="16">
+            <tspan x="532" dy="15">
               (Media)
             </tspan>
           </text>
         </g>
 
-        {/* Pairwise lenses — short Chinese only, no stacked EN */}
-        <g className="convergence-venn__pair">
-          <text x="248" y="248" textAnchor="middle">
-            实时推流
-          </text>
-          <text x="392" y="248" textAnchor="middle">
-            互动直播
-          </text>
-          <text x="320" y="412" textAnchor="middle">
-            短视频算法
-          </text>
-        </g>
+        {/* Intersection labels on opaque paper plates */}
+        <g className="convergence-venn__labels">
+          <LabelPlate x={236} y={248} width={72} height={28}>
+            <text className="convergence-venn__pair" textAnchor="middle" y="5">
+              实时推流
+            </text>
+          </LabelPlate>
 
-        {/* Triple core */}
-        <g className="convergence-venn__core">
-          <text x="320" y="300" textAnchor="middle">
-            <tspan x="320" dy="0">
+          <LabelPlate x={404} y={248} width={72} height={28}>
+            <text className="convergence-venn__pair" textAnchor="middle" y="5">
+              互动直播
+            </text>
+          </LabelPlate>
+
+          <LabelPlate x={320} y={392} width={88} height={28}>
+            <text className="convergence-venn__pair" textAnchor="middle" y="5">
+              短视频算法
+            </text>
+          </LabelPlate>
+
+          <LabelPlate x={320} y={290} width={96} height={44}>
+            <text className="convergence-venn__core" textAnchor="middle" y="-2">
               内容 IP
-            </tspan>
-            <tspan className="convergence-venn__core-sub" x="320" dy="18">
+            </text>
+            <text
+              className="convergence-venn__core-sub"
+              textAnchor="middle"
+              y="16"
+            >
               直播 × 短视频
-            </tspan>
-          </text>
+            </text>
+          </LabelPlate>
         </g>
       </svg>
     </div>
