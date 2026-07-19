@@ -44,9 +44,9 @@
   --radius-full: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* Do not set scroll-behavior: smooth on html — with App Router soft navigation it
+   can keep the previous page offset and clamp to the bottom of shorter pages.
+   不要在 html 上设 scroll-behavior: smooth，软导航会保留上一页偏移并夹到短页底部。 */
 
 .sr-only {
   position: absolute;

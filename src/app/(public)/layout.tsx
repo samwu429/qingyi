@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SiteHeader } from "@/ui/components/layout/site-header/site-header";
 import { SiteFooter } from "@/ui/components/layout/site-footer/site-footer";
+import { ScrollToTop } from "@/ui/components/layout/scroll-to-top";
 import { ChatWidget } from "@/ui/components/chat/chat-widget";
 import { isGroqConfigured } from "@/config/env";
 
@@ -11,6 +12,7 @@ import { isGroqConfigured } from "@/config/env";
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <ScrollToTop />
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
