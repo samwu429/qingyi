@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { siteConfig } from "@/config/site.config";
+import { flattenNavigation, siteConfig } from "@/config/site.config";
 import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { Container } from "@/ui/components/primitives/container";
 
@@ -24,7 +24,7 @@ export function SiteFooter() {
         <div>
           <h3 className="text-sm font-semibold text-white/90">快速导航</h3>
           <ul className="mt-4 space-y-2 text-sm">
-            {siteConfig.primaryNavigation.map((item) => (
+            {flattenNavigation().map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}

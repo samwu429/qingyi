@@ -2,20 +2,52 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { siteConfig } from "@/config/site.config";
 import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { Container } from "@/ui/components/primitives/container";
 import { cn } from "@/lib/ui/cn";
 
-// Public site header: official VI primary lockup, quiet nav, square CTA.
-// 公共页头：正式 VI 主标识、克制导航、直角行动按钮。
+// Public site header: short top nav; Join / Contact sit under About.
+// 公共页头：顶栏精简；加入 / 联系收在「关于我们」下。
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const aboutWrapRef = useRef<HTMLDivElement>(null);
+  const aboutMenuId = useId();
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  const aboutItem = siteConfig.primaryNavigation.find(
+    (item) => item.children?.length,
+  );
+  const aboutActive = Boolean(
+    aboutItem &&
+      (isActive(aboutItem.href) ||
+        aboutItem.children?.some((child) => isActive(child.href))),
+  );
+
+  useEffect(() => {
+    if (!aboutOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (!aboutWrapRef.current?.contains(event.target as Node)) {
+        setAboutOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setAboutOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [aboutOpen]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-mist-100/10 bg-white/90 backdrop-blur-md">
@@ -27,20 +59,92 @@ export function SiteHeader() {
         />
 
         <nav className="hidden items-center gap-1 md:flex">
-          {siteConfig.primaryNavigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "px-3.5 py-2 text-sm font-medium transition-colors",
-                isActive(item.href)
-                  ? "bg-ink-850 text-jade-600"
-                  : "text-mist-300 hover:text-mist-100",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {siteConfig.primaryNavigation.map((item) => {
+            if (item.children?.length) {
+              return (
+                <div
+                  key={item.href}
+                  ref={aboutWrapRef}
+                  className="relative"
+                  onMouseEnter={() => setAboutOpen(true)}
+                  onMouseLeave={() => setAboutOpen(false)}
+                >
+                  <button
+                    type="button"
+                    className={cn(
+                      "inline-flex items-center gap-1 px-3.5 py-2 text-sm font-medium transition-colors",
+                      aboutActive || aboutOpen
+                        ? "bg-ink-850 text-jade-600"
+                        : "text-mist-300 hover:text-mist-100",
+                    )}
+                    aria-expanded={aboutOpen}
+                    aria-controls={aboutMenuId}
+                    aria-haspopup="menu"
+                    onClick={() => setAboutOpen((value) => !value)}
+                  >
+                    {item.label}
+                    <span className="text-[0.65rem] opacity-70" aria-hidden>
+                      ▾
+                    </span>
+                  </button>
+
+                  <div
+                    id={aboutMenuId}
+                    role="menu"
+                    className={cn(
+                      "absolute left-0 top-full z-50 min-w-[9.5rem] border border-mist-100/10 bg-white py-1 shadow-[0_12px_28px_-16px_rgba(40,40,40,0.35)]",
+                      aboutOpen ? "visible opacity-100" : "invisible opacity-0",
+                    )}
+                  >
+                    <Link
+                      href={item.href}
+                      role="menuitem"
+                      onClick={() => setAboutOpen(false)}
+                      className={cn(
+                        "block px-4 py-2.5 text-sm transition-colors",
+                        isActive(item.href)
+                          ? "bg-ink-850 text-jade-600"
+                          : "text-mist-300 hover:bg-ink-950 hover:text-mist-100",
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        role="menuitem"
+                        onClick={() => setAboutOpen(false)}
+                        className={cn(
+                          "block px-4 py-2.5 text-sm transition-colors",
+                          isActive(child.href)
+                            ? "bg-ink-850 text-jade-600"
+                            : "text-mist-300 hover:bg-ink-950 hover:text-mist-100",
+                        )}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "px-3.5 py-2 text-sm font-medium transition-colors",
+                  isActive(item.href)
+                    ? "bg-ink-850 text-jade-600"
+                    : "text-mist-300 hover:text-mist-100",
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden md:block">
@@ -67,19 +171,39 @@ export function SiteHeader() {
         <div className="border-t border-mist-100/10 bg-white md:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {siteConfig.primaryNavigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "px-4 py-3 text-sm font-medium",
-                  isActive(item.href)
-                    ? "bg-ink-850 text-jade-600"
-                    : "text-mist-300",
-                )}
-              >
-                {item.label}
-              </Link>
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "block px-4 py-3 text-sm font-medium",
+                    isActive(item.href)
+                      ? "bg-ink-850 text-jade-600"
+                      : "text-mist-300",
+                  )}
+                >
+                  {item.label}
+                </Link>
+                {item.children?.length ? (
+                  <div className="mb-1 ml-3 border-l border-mist-100/10 pl-2">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "block px-4 py-2.5 text-sm",
+                          isActive(child.href)
+                            ? "bg-ink-850 text-jade-600"
+                            : "text-mist-400",
+                        )}
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             ))}
             <Link
               href="/join"

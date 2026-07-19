@@ -99,7 +99,7 @@ export async function buildAssistantSystemPrompt(): Promise<string> {
   }
 
   lines.push(
-    "网站栏目及链接：首页 /、签约主播 /streamers、动态资讯 /blog、关于我们 /about、加入我们（在线报名/留言）/join、联系我们 /contact。",
+    "网站栏目及链接：首页 /、签约主播 /streamers、动态资讯 /blog、关于我们 /about（其下含加入我们 /join、联系我们 /contact）。",
   );
 
   lines.push(

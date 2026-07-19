@@ -5,6 +5,7 @@
 export interface NavigationItem {
   label: string;
   href: string;
+  children?: NavigationItem[];
 }
 
 export const siteConfig = {
@@ -33,16 +34,35 @@ export const siteConfig = {
     personalSiteUrl: "https://topphi.com",
     personalSiteLabel: "topphi.com",
   },
-  // Primary navigation shared across every public page.
-  // 公共页面共享的主导航。
+  // Top nav stays short; Join / Contact nest under About for a quieter chrome.
+  // 顶栏保持精简；「加入我们」「联系我们」挂在「关于我们」下，减少并列按钮。
   primaryNavigation: [
     { label: "首页", href: "/" },
     { label: "签约主播", href: "/streamers" },
     { label: "动态资讯", href: "/blog" },
-    { label: "关于我们", href: "/about" },
-    { label: "加入我们", href: "/join" },
-    { label: "联系我们", href: "/contact" },
+    {
+      label: "关于我们",
+      href: "/about",
+      children: [
+        { label: "加入我们", href: "/join" },
+        { label: "联系我们", href: "/contact" },
+      ],
+    },
   ] satisfies NavigationItem[],
 } as const;
 
 export type SiteConfig = typeof siteConfig;
+
+// Flatten nested nav for footers and any full-link listings.
+// 展开嵌套导航，供页脚等需要完整链接列表的位置使用。
+export function flattenNavigation(
+  items: readonly NavigationItem[] = siteConfig.primaryNavigation,
+): NavigationItem[] {
+  return items.flatMap((item) => [
+    { label: item.label, href: item.href },
+    ...(item.children ?? []).map((child) => ({
+      label: child.label,
+      href: child.href,
+    })),
+  ]);
+}
