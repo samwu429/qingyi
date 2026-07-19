@@ -75,21 +75,28 @@ model Streamer {
   @@map("streamers")
 }
 
-// Time-series performance record for a streamer (fan count, live-stream income).
-// Only the latest fan count is surfaced publicly (mirrored onto Streamer.followers);
-// income and history are internal figures shown to administrators only.
-// 主播的运营数据记录（粉丝数、直播收入等，按周期上传）。前台仅展示最新粉丝数
-//（同步到 Streamer.followers）；收入与历史数据为内部指标，仅管理员可见。
+// Time-series performance record for a streamer. Only the latest fan count is
+// surfaced publicly (mirrored onto Streamer.followers); the rest stay internal.
+// 主播运营数据记录。前台仅展示最新粉丝数（同步到 Streamer.followers）；其余为内部指标。
 model StreamerMetric {
-  id         String   @id @default(cuid())
-  streamerId String
-  streamer   Streamer @relation(fields: [streamerId], references: [id], onDelete: Cascade)
-  period     String
-  followers  Int      @default(0)
-  income     Int      @default(0)
-  note       String?
-  recordedAt DateTime @default(now())
-  createdAt  DateTime @default(now())
+  id          String   @id @default(cuid())
+  streamerId  String
+  streamer    Streamer @relation(fields: [streamerId], references: [id], onDelete: Cascade)
+  period      String
+  followers   Int      @default(0)
+  income      Int      @default(0)
+  /// Live duration for the period, in minutes.
+  /// 该周期开播时长（分钟）。
+  liveMinutes Int      @default(0)
+  viewers     Int      @default(0)
+  comments    Int      @default(0)
+  likes       Int      @default(0)
+  /// Douyin “音浪” (gift currency) earned in the period.
+  /// 该周期收获音浪。
+  yinlang     Int      @default(0)
+  note        String?
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([streamerId, recordedAt])
   @@map("streamer_metrics")

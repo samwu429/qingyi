@@ -18,6 +18,16 @@ function emptyToZero(value: unknown): unknown {
   return value;
 }
 
+const nonNegInt = (label: string) =>
+  z.preprocess(
+    emptyToZero,
+    z.coerce
+      .number()
+      .int(`${label}需为整数`)
+      .min(0, `${label}不能为负`)
+      .max(INT_MAX, `${label}过大`),
+  );
+
 export const metricInputSchema = z.object({
   streamerId: z.string().min(1, "缺少主播标识"),
   period: z
@@ -32,18 +42,13 @@ export const metricInputSchema = z.object({
     }
     return undefined;
   }, z.date().optional()),
-  followers: z.preprocess(
-    emptyToZero,
-    z.coerce.number().int("粉丝数需为整数").min(0, "粉丝数不能为负").max(INT_MAX, "粉丝数过大"),
-  ),
-  income: z.preprocess(
-    emptyToZero,
-    z.coerce
-      .number()
-      .int("直播收入需为整数元")
-      .min(0, "直播收入不能为负")
-      .max(INT_MAX, "直播收入过大"),
-  ),
+  followers: nonNegInt("粉丝数"),
+  income: nonNegInt("直播收入"),
+  liveMinutes: nonNegInt("开播时长"),
+  viewers: nonNegInt("观众人数"),
+  comments: nonNegInt("评论人数"),
+  likes: nonNegInt("点赞次数"),
+  yinlang: nonNegInt("音浪"),
   note: z.preprocess((value) => {
     if (typeof value === "string") {
       return value.trim();

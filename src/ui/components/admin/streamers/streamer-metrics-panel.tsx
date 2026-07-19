@@ -20,10 +20,8 @@ import {
 } from "@/lib/text/format";
 
 // Admin-only performance data manager rendered on the streamer edit page.
-// Uploads add a dated record (fans + income); the newest record's fan count is
-// mirrored to the public profile automatically. Income stays internal.
-// 主播编辑页上的运营数据管理（仅管理员可见）。上传会新增一条带日期的记录（粉丝 + 收入）；
-// 最新记录的粉丝数会自动同步到前台档案，收入数据仅内部可见。
+// Uploads add a dated record; the newest fan count is mirrored publicly.
+// 主播编辑页上的运营数据管理（仅管理员可见）。上传会新增一期记录；最新粉丝数同步前台。
 export function StreamerMetricsPanel({
   streamerId,
   metrics,
@@ -55,7 +53,7 @@ export function StreamerMetricsPanel({
           运营数据（内部）
         </h2>
         <p className="mt-1 text-sm text-mist-400">
-          上传每期粉丝数与直播收入。前台仅显示最新粉丝数，收入等数据仅在后台统计中可见。
+          上传每期粉丝、开播与互动数据。前台仅显示最新粉丝数，其余仅后台可见。
         </p>
       </header>
 
@@ -93,7 +91,56 @@ export function StreamerMetricsPanel({
             defaultValue={0}
           />
         </Field>
-        <div className="sm:col-span-2 lg:col-span-4">
+        <Field
+          label="开播时长（分钟）"
+          htmlFor="metric-liveMinutes"
+          hint={fieldError("liveMinutes")}
+        >
+          <TextInput
+            id="metric-liveMinutes"
+            name="liveMinutes"
+            type="number"
+            min={0}
+            defaultValue={0}
+          />
+        </Field>
+        <Field label="观众人数" htmlFor="metric-viewers" hint={fieldError("viewers")}>
+          <TextInput
+            id="metric-viewers"
+            name="viewers"
+            type="number"
+            min={0}
+            defaultValue={0}
+          />
+        </Field>
+        <Field label="评论人数" htmlFor="metric-comments" hint={fieldError("comments")}>
+          <TextInput
+            id="metric-comments"
+            name="comments"
+            type="number"
+            min={0}
+            defaultValue={0}
+          />
+        </Field>
+        <Field label="点赞次数" htmlFor="metric-likes" hint={fieldError("likes")}>
+          <TextInput
+            id="metric-likes"
+            name="likes"
+            type="number"
+            min={0}
+            defaultValue={0}
+          />
+        </Field>
+        <Field label="收获音浪" htmlFor="metric-yinlang" hint={fieldError("yinlang")}>
+          <TextInput
+            id="metric-yinlang"
+            name="yinlang"
+            type="number"
+            min={0}
+            defaultValue={0}
+          />
+        </Field>
+        <div className="sm:col-span-2 lg:col-span-3">
           <Field label="备注（选填）" htmlFor="note" hint={fieldError("note")}>
             <TextArea
               id="note"
@@ -136,7 +183,11 @@ export function StreamerMetricsPanel({
                   <th className="px-4 py-2.5 font-medium">粉丝数</th>
                   <th className="px-4 py-2.5 font-medium">粉丝环比</th>
                   <th className="px-4 py-2.5 font-medium">直播收入</th>
-                  <th className="px-4 py-2.5 font-medium">收入环比</th>
+                  <th className="px-4 py-2.5 font-medium">开播时长</th>
+                  <th className="px-4 py-2.5 font-medium">观众</th>
+                  <th className="px-4 py-2.5 font-medium">评论</th>
+                  <th className="px-4 py-2.5 font-medium">点赞</th>
+                  <th className="px-4 py-2.5 font-medium">音浪</th>
                   <th className="px-4 py-2.5 font-medium">备注</th>
                   <th className="px-4 py-2.5 text-right font-medium">操作</th>
                 </tr>
@@ -165,11 +216,21 @@ export function StreamerMetricsPanel({
                     <td className="px-4 py-2.5 text-mist-200">
                       {formatMoney(metric.income)}
                     </td>
-                    <td className="px-4 py-2.5">
-                      <GrowthCell
-                        delta={metric.incomeDelta}
-                        pct={metric.incomeGrowthPct}
-                      />
+                    <td className="px-4 py-2.5 text-mist-200">
+                      {metric.liveMinutes.toLocaleString("zh-CN")}
+                      <span className="ml-1 text-xs text-mist-400">分</span>
+                    </td>
+                    <td className="px-4 py-2.5 text-mist-200">
+                      {metric.viewers.toLocaleString("zh-CN")}
+                    </td>
+                    <td className="px-4 py-2.5 text-mist-200">
+                      {metric.comments.toLocaleString("zh-CN")}
+                    </td>
+                    <td className="px-4 py-2.5 text-mist-200">
+                      {metric.likes.toLocaleString("zh-CN")}
+                    </td>
+                    <td className="px-4 py-2.5 text-mist-200">
+                      {metric.yinlang.toLocaleString("zh-CN")}
                     </td>
                     <td className="px-4 py-2.5 text-mist-400">
                       {metric.note ?? "—"}
@@ -203,9 +264,6 @@ export function StreamerMetricsPanel({
   );
 }
 
-// Colour-coded growth cell: green for gains, red for drops, muted for the first
-// record where no comparison exists.
-// 带颜色的环比单元格：上涨为绿色，下降为红色，首条无对比时置灰。
 function GrowthCell({
   delta,
   pct,

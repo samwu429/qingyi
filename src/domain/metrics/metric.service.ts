@@ -47,6 +47,11 @@ export interface MetricHistoryRow {
   period: string;
   followers: number;
   income: number;
+  liveMinutes: number;
+  viewers: number;
+  comments: number;
+  likes: number;
+  yinlang: number;
   note: string | null;
   recordedAt: string;
   followersDelta: number | null;
@@ -64,6 +69,11 @@ export interface MetricExportRow {
   recordedAt: string;
   followers: number;
   income: number;
+  liveMinutes: number;
+  viewers: number;
+  comments: number;
+  likes: number;
+  yinlang: number;
   note: string;
 }
 
@@ -94,6 +104,11 @@ export const metricService = {
         period: metric.period,
         followers: metric.followers,
         income: metric.income,
+        liveMinutes: metric.liveMinutes,
+        viewers: metric.viewers,
+        comments: metric.comments,
+        likes: metric.likes,
+        yinlang: metric.yinlang,
         note: metric.note,
         recordedAt: formatDate(metric.recordedAt),
         followersDelta: followersGrowth.delta,
@@ -117,6 +132,11 @@ export const metricService = {
       recordedAt: formatDate(metric.recordedAt),
       followers: metric.followers,
       income: metric.income,
+      liveMinutes: metric.liveMinutes,
+      viewers: metric.viewers,
+      comments: metric.comments,
+      likes: metric.likes,
+      yinlang: metric.yinlang,
       note: metric.note ?? "",
     }));
   },
@@ -127,6 +147,11 @@ export const metricService = {
       period: input.period.trim(),
       followers: input.followers,
       income: input.income,
+      liveMinutes: input.liveMinutes,
+      viewers: input.viewers,
+      comments: input.comments,
+      likes: input.likes,
+      yinlang: input.yinlang,
       note: input.note.trim() ? input.note.trim() : null,
       ...(input.recordedAt ? { recordedAt: input.recordedAt } : {}),
     });

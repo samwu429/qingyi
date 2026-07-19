@@ -37,6 +37,11 @@ export async function createMetricAction(
     recordedAt: formData.get("recordedAt"),
     followers: formData.get("followers"),
     income: formData.get("income"),
+    liveMinutes: formData.get("liveMinutes"),
+    viewers: formData.get("viewers"),
+    comments: formData.get("comments"),
+    likes: formData.get("likes"),
+    yinlang: formData.get("yinlang"),
     note: formData.get("note"),
   });
   if (!parsed.success) {

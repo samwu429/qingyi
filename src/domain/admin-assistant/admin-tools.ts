@@ -173,7 +173,7 @@ export const adminToolDefinitions: GroqToolDefinition[] = [
     function: {
       name: "create_metric",
       description:
-        "为指定主播写入一条运营数据（period/followers/income）。income 单位为人民币元整数。写入后会同步前台粉丝数。",
+        "为指定主播写入一条运营数据。income 为人民币元整数；liveMinutes 为开播分钟；yinlang 为收获音浪。写入后会同步前台粉丝数。",
       parameters: {
         type: "object",
         properties: {
@@ -181,6 +181,11 @@ export const adminToolDefinitions: GroqToolDefinition[] = [
           period: { type: "string", description: "如 2026-07 或 本周" },
           followers: { type: "number" },
           income: { type: "number", description: "直播收入，整数元" },
+          liveMinutes: { type: "number", description: "开播时长（分钟）" },
+          viewers: { type: "number", description: "观众人数" },
+          comments: { type: "number", description: "评论人数" },
+          likes: { type: "number", description: "点赞次数" },
+          yinlang: { type: "number", description: "收获音浪" },
           note: { type: "string" },
           recordedAt: { type: "string", description: "ISO 日期，可选" },
         },
@@ -442,7 +447,7 @@ const handlers: Record<string, ToolHandler> = {
     record(
       ctx,
       "create_metric",
-      `已写入「${streamer.name}」${metric.period}：粉丝 ${metric.followers}，收入 ¥${metric.income}`,
+      `已写入「${streamer.name}」${metric.period}：粉丝 ${metric.followers}，收入 ¥${metric.income}，开播 ${metric.liveMinutes} 分，观众 ${metric.viewers}，评论 ${metric.comments}，点赞 ${metric.likes}，音浪 ${metric.yinlang}`,
       true,
     );
     return {
@@ -451,6 +456,11 @@ const handlers: Record<string, ToolHandler> = {
       period: metric.period,
       followers: metric.followers,
       income: metric.income,
+      liveMinutes: metric.liveMinutes,
+      viewers: metric.viewers,
+      comments: metric.comments,
+      likes: metric.likes,
+      yinlang: metric.yinlang,
     };
   },
 

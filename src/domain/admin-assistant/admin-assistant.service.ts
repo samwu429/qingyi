@@ -33,7 +33,7 @@ function buildSystemPrompt(): string {
     "你可以阅读用户上传的截图、表格、文档，并通过工具直接读写本站数据库。",
     "",
     "核心能力：",
-    "- 运营数据 StreamerMetric：period（如 2026-07）、followers（粉丝整数）、income（直播收入，人民币元整数）",
+    "- 运营数据 StreamerMetric：period、followers、income（元）、liveMinutes（开播分钟）、viewers、comments、likes、yinlang（音浪）",
     "- 主播档案、资讯文章、加入留言、站点页面文案（home/about/join/contact）",
     "",
     "硬性规则：",

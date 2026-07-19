@@ -11,6 +11,11 @@ const HEADERS = [
   "记录日期",
   "粉丝数",
   "直播收入(元)",
+  "开播时长(分钟)",
+  "观众人数",
+  "评论人数",
+  "点赞次数",
+  "收获音浪",
   "备注",
 ];
 
@@ -33,6 +38,11 @@ export function buildMetricCsv(rows: MetricExportRow[]): string {
         row.recordedAt,
         row.followers,
         row.income,
+        row.liveMinutes,
+        row.viewers,
+        row.comments,
+        row.likes,
+        row.yinlang,
         row.note,
       ]
         .map(escapeCell)
