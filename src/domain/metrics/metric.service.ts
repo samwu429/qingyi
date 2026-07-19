@@ -91,6 +91,14 @@ export const metricService = {
     return metricRepository.listByStreamer(streamerId);
   },
 
+  // Total live hours (from uploaded liveMinutes) in [from, to].
+  // 时间窗口内已上传开播分钟换算成的总小时数。
+  async getLiveHoursBetween(from: Date, to: Date): Promise<number> {
+    const minutes = await metricRepository.sumLiveMinutes(from, to);
+    return minutes / 60;
+  },
+
+
   // History (newest first) with each record compared to the older one below it.
   // 历史记录（最新在前），每条与其下方的上一期对比得出环比。
   async getStreamerHistory(streamerId: string): Promise<MetricHistoryRow[]> {

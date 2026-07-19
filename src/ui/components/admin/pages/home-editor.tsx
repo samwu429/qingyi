@@ -92,6 +92,9 @@ export function HomeEditor({
 
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-mist-100">数据统计</h2>
+        <p className="text-xs text-mist-400">
+          标签为「签约创作者」「每月开播时长」（或含「开播时长」）时，前台数值会按后台实时计算：已发布主播数、本月上传运营数据的开播总时长。其它统计项仍用下方填写的数值。
+        </p>
         <RepeatableList
           items={content.stats}
           onChange={(next) => set("stats", next)}
@@ -107,7 +110,7 @@ export function HomeEditor({
               <TextInput
                 value={item.label}
                 onChange={(e) => update({ label: e.target.value })}
-                placeholder="标签，如 签约主播"
+                placeholder="标签，如 签约创作者"
               />
             </div>
           )}

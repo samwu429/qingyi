@@ -57,4 +57,16 @@ export const metricRepository = {
   delete(id: string): Promise<StreamerMetric> {
     return prisma.streamerMetric.delete({ where: { id } });
   },
+
+  // Sum live minutes across all streamers for a recordedAt window (inclusive).
+  // 汇总时间窗口内（含边界）全部主播的开播分钟数。
+  async sumLiveMinutes(from: Date, to: Date): Promise<number> {
+    const result = await prisma.streamerMetric.aggregate({
+      where: {
+        recordedAt: { gte: from, lte: to },
+      },
+      _sum: { liveMinutes: true },
+    });
+    return result._sum.liveMinutes ?? 0;
+  },
 };

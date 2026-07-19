@@ -7,6 +7,11 @@ import { HomeHero } from "@/ui/components/home/home-hero/home-hero";
 import { siteContentService } from "@/domain/site/site-content.service";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { postService } from "@/domain/blog/post.service";
+import { metricService } from "@/domain/metrics/metric.service";
+import {
+  applyLiveHomeStats,
+  currentMonthRange,
+} from "@/domain/site/home-live-stats";
 
 // Content is administrator-editable and fetched per request so updates appear
 // immediately without a rebuild.
@@ -16,20 +21,33 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   // Degrade individually so a downed local DB does not blank the whole page.
   // 单项降级：本地数据库未启动时仍渲染默认首页，避免整页白屏。
-  const [home, featuredStreamers, recentPosts] = await Promise.all([
-    siteContentService.get("home"),
-    streamerService.listFeatured(6).catch(() => []),
-    postService.listRecent(3).catch(() => []),
-  ]);
+  const month = currentMonthRange();
+  const [home, featuredStreamers, recentPosts, streamerStats, monthlyLiveHours] =
+    await Promise.all([
+      siteContentService.get("home"),
+      streamerService.listFeatured(6).catch(() => []),
+      postService.listRecent(3).catch(() => []),
+      streamerService.stats().catch(() => ({
+        total: 0,
+        published: 0,
+        featured: 0,
+      })),
+      metricService.getLiveHoursBetween(month.from, month.to).catch(() => 0),
+    ]);
+
+  const stats = applyLiveHomeStats(home.stats, {
+    publishedCreators: streamerStats.published,
+    monthlyLiveHours,
+  });
 
   return (
     <div>
       <HomeHero content={home} />
 
-      {home.stats.length > 0 ? (
+      {stats.length > 0 ? (
         <section className="border-y border-mist-100/10 bg-white">
           <Container className="grid grid-cols-2 gap-8 py-14 sm:grid-cols-4">
-            {home.stats.map((stat, index) => (
+            {stats.map((stat, index) => (
               <div key={`${stat.label}-${index}`}>
                 <p className="font-display text-3xl font-bold text-jade-500 sm:text-4xl">
                   {stat.value}
