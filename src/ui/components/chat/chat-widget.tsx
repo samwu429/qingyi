@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { siteConfig } from "@/config/site.config";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+interface OrbPos {
+  x: number;
+  y: number;
+}
+
+const ORB_SIZE = 60;
+const EDGE_MARGIN = 16;
+const PANEL_GAP = 12;
+const PANEL_WIDTH = 352;
+const PANEL_HEIGHT = 512;
+const STORAGE_KEY = "qingyi-chat-orb-pos";
+const DRAG_THRESHOLD = 6;
 
 const GREETING: Message = {
   role: "assistant",
@@ -20,18 +40,126 @@ const SUGGESTIONS = [
   "怎么联系你们？",
 ];
 
-// Floating, streaming chat assistant available on every public page. Conversation
-// state lives here and persists across client-side navigation because the widget
-// is mounted in the shared public layout.
-// 浮动的流式聊天助手，在所有公开页面可用。对话状态保存在组件内，并因挂载于共享的公开布局中
-// 而在前端路由切换时保持不丢。
+function defaultPos(): OrbPos {
+  if (typeof window === "undefined") {
+    return { x: 20, y: 20 };
+  }
+  return {
+    x: Math.max(EDGE_MARGIN, window.innerWidth - ORB_SIZE - EDGE_MARGIN),
+    y: Math.max(EDGE_MARGIN, window.innerHeight - ORB_SIZE - EDGE_MARGIN),
+  };
+}
+
+function clampPos(pos: OrbPos): OrbPos {
+  const maxX = Math.max(EDGE_MARGIN, window.innerWidth - ORB_SIZE - EDGE_MARGIN);
+  const maxY = Math.max(
+    EDGE_MARGIN,
+    window.innerHeight - ORB_SIZE - EDGE_MARGIN,
+  );
+  return {
+    x: Math.min(maxX, Math.max(EDGE_MARGIN, pos.x)),
+    y: Math.min(maxY, Math.max(EDGE_MARGIN, pos.y)),
+  };
+}
+
+// Snap horizontally to the nearer left/right edge; keep Y within the viewport.
+// 水平吸附到更近的左/右边缘，纵向仍限制在可视区内。
+function snapToEdge(pos: OrbPos): OrbPos {
+  const clamped = clampPos(pos);
+  const mid = window.innerWidth / 2;
+  const centerX = clamped.x + ORB_SIZE / 2;
+  return {
+    x:
+      centerX < mid
+        ? EDGE_MARGIN
+        : Math.max(EDGE_MARGIN, window.innerWidth - ORB_SIZE - EDGE_MARGIN),
+    y: clamped.y,
+  };
+}
+
+function readStoredPos(): OrbPos | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<OrbPos>;
+    if (typeof parsed.x === "number" && typeof parsed.y === "number") {
+      return clampPos({ x: parsed.x, y: parsed.y });
+    }
+  } catch {
+    // Ignore corrupted storage.
+  }
+  return null;
+}
+
+function panelStyle(pos: OrbPos, open: boolean): CSSProperties {
+  if (!open || typeof window === "undefined") {
+    return { display: "none" };
+  }
+
+  const preferLeft = pos.x + ORB_SIZE / 2 > window.innerWidth / 2;
+  const panelW = Math.min(PANEL_WIDTH, window.innerWidth - EDGE_MARGIN * 2);
+  const panelH = Math.min(PANEL_HEIGHT, window.innerHeight - EDGE_MARGIN * 2);
+
+  let left = preferLeft
+    ? pos.x + ORB_SIZE - panelW
+    : pos.x;
+  left = Math.min(
+    Math.max(EDGE_MARGIN, left),
+    window.innerWidth - panelW - EDGE_MARGIN,
+  );
+
+  // Prefer opening above the orb; if not enough room, open below.
+  // 优先在球上方展开；上方空间不足则改到下方。
+  let top = pos.y - panelH - PANEL_GAP;
+  if (top < EDGE_MARGIN) {
+    top = pos.y + ORB_SIZE + PANEL_GAP;
+  }
+  if (top + panelH > window.innerHeight - EDGE_MARGIN) {
+    top = Math.max(EDGE_MARGIN, window.innerHeight - panelH - EDGE_MARGIN);
+  }
+
+  return {
+    left,
+    top,
+    width: panelW,
+    height: panelH,
+  };
+}
+
+// Floating, streaming chat assistant available on every public page. The orb is
+// fixed-positioned and can be dragged; on release it snaps to the nearer side
+// edge and the position is remembered in localStorage.
+// 浮动流式聊天助手。球体为 fixed 定位，可按住拖拽；松手吸附到较近侧边，位置写入 localStorage。
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pos, setPos] = useState<OrbPos>(defaultPos);
+  const [ready, setReady] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    pointerId: number;
+    offsetX: number;
+    offsetY: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    const stored = readStoredPos();
+    setPos(stored ?? defaultPos());
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setPos((current) => clampPos(current));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -39,6 +167,72 @@ export function ChatWidget() {
       behavior: "smooth",
     });
   }, [messages, open]);
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) >= DRAG_THRESHOLD) {
+      drag.moved = true;
+    }
+    if (!drag.moved) return;
+
+    setPos(
+      clampPos({
+        x: event.clientX - drag.offsetX,
+        y: event.clientY - drag.offsetY,
+      }),
+    );
+  };
+
+  const finishDrag = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // Already released.
+      }
+
+      dragRef.current = null;
+      setDragging(false);
+
+      if (!drag.moved) {
+        setOpen((value) => !value);
+        return;
+      }
+
+      setPos((current) => {
+        const snapped = snapToEdge(current);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(snapped));
+        } catch {
+          // Ignore quota / private mode errors.
+        }
+        return snapped;
+      });
+    },
+    [],
+  );
 
   const send = async (text: string) => {
     const trimmed = text.trim();
@@ -51,7 +245,10 @@ export function ChatWidget() {
     const history = messages
       .filter((message) => message !== GREETING)
       .map((message) => ({ role: message.role, content: message.content }));
-    const outgoing: Message[] = [...messages, { role: "user", content: trimmed }];
+    const outgoing: Message[] = [
+      ...messages,
+      { role: "user", content: trimmed },
+    ];
     setMessages([...outgoing, { role: "assistant", content: "" }]);
     setSending(true);
 
@@ -96,19 +293,34 @@ export function ChatWidget() {
     }
   };
 
+  if (!ready) {
+    return null;
+  }
+
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
         aria-label={open ? "关闭在线咨询" : "打开在线咨询"}
-        className={`chat-orb fixed bottom-5 right-5 z-50${open ? " chat-orb--open" : ""}`}
+        className={`chat-orb z-50${open ? " chat-orb--open" : ""}${
+          dragging ? " chat-orb--dragging" : ""
+        }`}
+        style={{
+          position: "fixed",
+          left: pos.x,
+          top: pos.y,
+          zIndex: 50,
+        }}
       >
         <span className="chat-orb__glyph">{open ? "×" : "青"}</span>
       </button>
 
       {open ? (
-        <div className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[calc(100vh-8rem)] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden border border-mist-100/15 bg-white shadow-2xl">
+        <div className="chat-panel" style={panelStyle(pos, open)}>
           <header className="flex items-center gap-3 border-b border-mist-100/10 bg-ink-950 px-4 py-3">
             <span className="chat-orb-mini" aria-hidden>
               青
@@ -116,17 +328,22 @@ export function ChatWidget() {
             <div className="leading-tight">
               <p className="text-sm font-semibold text-mist-100">青意小助手</p>
               <p className="text-[11px] text-mist-400">
-                在线为你解答加入与合作问题
+                按住球体可拖到任意位置，松手靠左/右吸附
               </p>
             </div>
           </header>
 
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          <div
+            ref={scrollRef}
+            className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+          >
             {messages.map((message, index) => (
               <div
                 key={index}
                 className={
-                  message.role === "user" ? "flex justify-end" : "flex justify-start"
+                  message.role === "user"
+                    ? "flex justify-end"
+                    : "flex justify-start"
                 }
               >
                 <div
