@@ -126,10 +126,9 @@ function panelStyle(pos: OrbPos, open: boolean): CSSProperties {
   };
 }
 
-// Floating, streaming chat assistant available on every public page. The orb is
-// fixed-positioned and can be dragged; on release it snaps to the nearer side
-// edge and the position is remembered in localStorage.
-// 浮动流式聊天助手。球体为 fixed 定位，可按住拖拽；松手吸附到较近侧边，位置写入 localStorage。
+// Floating chat assistant. Launcher is a flat circular accent — the one round
+// mark on an otherwise square site — fixed, draggable, with edge snap.
+// 浮动助手：全站直角里唯一点缀的扁圆环入口；可拖，松手侧边吸附。
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);

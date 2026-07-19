@@ -561,18 +561,18 @@ body {
   padding: 0.5rem 0.75rem;
 }
 
-/* Floating assistant launcher: square VI tile (not a plastic 3D ball).
-   Do NOT set position here — the widget applies position:fixed via inline
-   style for dragging; a relative rule would override fixed and hide it.
-   助手入口：直角 VI 方印块，非塑料立体球。勿在此设 position。 */
+/* Floating assistant launcher: the one round accent on a square site.
+   Flat disc + seal (not a plastic sphere, not another square tile).
+   Do NOT set position here — widget uses inline fixed for dragging.
+   助手入口：全站直角里唯一点缀的扁圆环，方印居中。勿在此设 position。 */
 .chat-orb {
   display: grid;
   place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.65rem;
+  height: 3.65rem;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--color-jade-600) 35%, transparent);
-  border-radius: 0;
+  border: 1.5px solid var(--color-jade-500);
+  border-radius: 50%;
   color: var(--color-jade-600);
   cursor: grab;
   touch-action: none;
@@ -580,15 +580,13 @@ body {
   -webkit-user-select: none;
   isolation: isolate;
   background: #ffffff;
-  box-shadow:
-    0 10px 28px -12px rgba(40, 40, 40, 0.28),
-    0 2px 6px -2px rgba(40, 40, 40, 0.1);
+  box-shadow: 0 8px 24px -10px rgba(40, 40, 40, 0.22);
   transition:
-    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 180ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease,
     background-color 160ms ease,
     border-color 160ms ease,
-    color 160ms ease;
+    border-width 160ms ease;
 }
 
 .chat-orb:active,
@@ -598,51 +596,68 @@ body {
 
 .chat-orb--dragging {
   transition: none;
-  transform: scale(1.04);
-  box-shadow:
-    0 16px 36px -12px rgba(40, 40, 40, 0.34),
-    0 4px 10px -2px rgba(40, 40, 40, 0.14);
+  transform: scale(1.05);
+  box-shadow: 0 12px 28px -10px rgba(40, 40, 40, 0.28);
 }
 
-.chat-orb::before,
+.chat-orb::before {
+  /* Quiet sage halo — soft accent, not a glow blob. */
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-jade-500) 22%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .chat-orb::after {
   content: none;
 }
 
 .chat-orb__mark {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 1.85rem;
-  height: 1.85rem;
+  width: 1.7rem;
+  height: 1.7rem;
   object-fit: contain;
   pointer-events: none;
 }
 
 .chat-orb__close {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-sans);
-  font-size: 1.35rem;
-  font-weight: 400;
+  font-size: 1.4rem;
+  font-weight: 300;
   line-height: 1;
   color: #ffffff;
   pointer-events: none;
 }
 
 .chat-orb:not(.chat-orb--dragging):hover {
-  transform: translateY(-2px);
-  border-color: var(--color-jade-500);
-  box-shadow:
-    0 14px 32px -12px rgba(40, 40, 40, 0.3),
-    0 4px 10px -2px rgba(104, 144, 120, 0.18);
+  transform: translateY(-3px);
+  border-color: var(--color-jade-600);
+  box-shadow: 0 14px 30px -12px rgba(79, 115, 94, 0.28);
+}
+
+.chat-orb:not(.chat-orb--dragging):hover::before {
+  border-color: color-mix(in srgb, var(--color-jade-500) 40%, transparent);
 }
 
 .chat-orb--open {
   background: var(--color-mist-100);
   border-color: var(--color-mist-100);
-  color: #ffffff;
+}
+
+.chat-orb--open::before {
+  border-color: color-mix(in srgb, var(--color-mist-100) 25%, transparent);
 }
 
 .chat-orb--open:not(.chat-orb--dragging):hover {
-  border-color: var(--color-mist-200);
-  background: var(--color-mist-200);
+  background: #3a3a3a;
+  border-color: #3a3a3a;
 }
 
 .chat-orb-mini {
@@ -651,14 +666,14 @@ body {
   width: 2rem;
   height: 2rem;
   flex-shrink: 0;
-  border: 1px solid color-mix(in srgb, var(--color-jade-500) 28%, transparent);
-  border-radius: 0;
+  border: 1px solid color-mix(in srgb, var(--color-jade-500) 30%, transparent);
+  border-radius: 50%;
   background: #ffffff;
 }
 
 .chat-orb-mini img {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.15rem;
+  height: 1.15rem;
   object-fit: contain;
 }
 
