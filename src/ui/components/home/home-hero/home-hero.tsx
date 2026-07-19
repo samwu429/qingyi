@@ -1,12 +1,12 @@
 import { siteConfig } from "@/config/site.config";
 import { BrandLogo } from "@/ui/components/brand/brand-logo";
+import { Container } from "@/ui/components/primitives/container";
 import { ButtonLink } from "@/ui/components/primitives/button-link";
 import { HeroMedia } from "@/ui/components/home/home-hero/hero-media";
 import type { HomeContent } from "@/domain/site/site-content.types";
 
-// Full-bleed hero: copy anchors to the left edge of a wide stage so the sage
-// art owns the right half — not a narrow column floating in empty margins.
-// 全幅首屏：文案靠左贴宽舞台，青绿视觉占右半，避免窄栏漂在两侧空白里。
+// Cinematic full-bleed hero: official VI logo leads, one headline, one line, CTAs.
+// 电影感全幅首屏：正式 VI 标志主导，一句标题、一句说明与行动按钮。
 export function HomeHero({ content }: { content: HomeContent }) {
   return (
     <section className="hero-stage">
@@ -14,7 +14,7 @@ export function HomeHero({ content }: { content: HomeContent }) {
 
       <div className="hero-stage__veil" />
 
-      <div className="hero-stage__content">
+      <Container className="hero-stage__content">
         <div className="hero-stage__copy">
           <div className="motion-clip">
             <BrandLogo
@@ -38,7 +38,7 @@ export function HomeHero({ content }: { content: HomeContent }) {
             </ButtonLink>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

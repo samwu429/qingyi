@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/ui/cn";
 
-// Horizontal layout container. Wide enough for modern desktops without
-// leaving huge empty gutters; fluid side padding for phones.
-// 水平布局容器：桌面加宽减少两侧空洞，手机用流动边距。
+// Horizontal layout container enforcing a consistent max width and gutters.
+// 水平布局容器，统一最大宽度与两侧留白。
 export function Container({
   children,
   className,
@@ -12,12 +11,7 @@ export function Container({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10 xl:px-12",
-        className,
-      )}
-    >
+    <div className={cn("mx-auto w-full max-w-6xl px-5 sm:px-8", className)}>
       {children}
     </div>
   );
