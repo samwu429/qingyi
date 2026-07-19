@@ -21,6 +21,14 @@ enum PublicationStatus {
   ARCHIVED
 }
 
+// Authoring format for a blog post body: Markdown (default) or free-form
+// HTML/CSS for rich layouts, embedded SVG, long images, and PDF embeds.
+// 博客正文的撰写格式：Markdown（默认）或自由 HTML/CSS（用于富排版、内嵌 SVG、长图与 PDF 嵌入）。
+enum PostFormat {
+  MARKDOWN
+  HTML
+}
+
 // Administrator account authorised to manage all back-office content.
 // 拥有后台内容管理权限的管理员账户。
 model AdminUser {
@@ -91,6 +99,7 @@ model BlogPost {
   title       String
   excerpt     String?
   content     String
+  format      PostFormat        @default(MARKDOWN)
   coverUrl    String?
   author      String?
   tags        String[]          @default([])

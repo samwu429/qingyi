@@ -478,4 +478,54 @@ body {
   border-radius: 0;
   margin: 1.5rem 0;
   max-width: 100%;
+  height: auto;
+}
+
+/* Free-form HTML/CSS article body. Authors control layout; we only provide safe
+   defaults so embedded media, long images, SVG, and PDF iframes stay responsive
+   and never overflow the reading column. */
+/* 自由 HTML/CSS 正文。排版由作者掌控，这里仅提供安全默认值，
+   使内嵌媒体、长图、SVG 与 PDF iframe 保持自适应、不溢出阅读区。 */
+.rich-content {
+  line-height: 1.9;
+  color: var(--color-mist-300);
+  overflow-wrap: break-word;
+}
+
+.rich-content img,
+.rich-content svg,
+.rich-content video,
+.rich-content picture {
+  max-width: 100%;
+  height: auto;
+}
+
+.rich-content iframe {
+  max-width: 100%;
+  width: 100%;
+  border: 0;
+}
+
+.rich-content iframe[src$=".pdf"],
+.rich-content iframe[data-pdf] {
+  height: 85vh;
+}
+
+.rich-content a {
+  color: var(--color-jade-500);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.rich-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.rich-content th,
+.rich-content td {
+  border: 1px solid var(--color-mist-100);
+  border-color: color-mix(in srgb, var(--color-mist-100) 12%, transparent);
+  padding: 0.5rem 0.75rem;
 }

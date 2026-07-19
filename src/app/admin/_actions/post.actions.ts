@@ -18,6 +18,7 @@ function buildInput(formData: FormData) {
     slug: formData.get("slug"),
     excerpt: formData.get("excerpt"),
     content: formData.get("content"),
+    format: formData.get("format") ?? "MARKDOWN",
     coverUrl: formData.get("coverUrl"),
     author: formData.get("author"),
     tags: parseTagList(

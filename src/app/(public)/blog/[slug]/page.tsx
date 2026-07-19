@@ -6,6 +6,7 @@ import { Badge } from "@/ui/components/primitives/badge";
 import { RemoteImage } from "@/ui/components/media/remote-image";
 import { postService } from "@/domain/blog/post.service";
 import { renderMarkdown } from "@/lib/content/markdown";
+import { renderRichHtml } from "@/lib/content/rich-html";
 import { formatDate } from "@/lib/text/format";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,8 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const html = renderMarkdown(post.content);
+  const isHtml = post.format === "HTML";
+  const html = isHtml ? renderRichHtml(post.content) : renderMarkdown(post.content);
 
   return (
     <article>
@@ -78,7 +80,7 @@ export default async function BlogPostPage({
         ) : null}
 
         <div
-          className="prose-content mt-10"
+          className={`${isHtml ? "rich-content" : "prose-content"} mt-10`}
           dangerouslySetInnerHTML={{ __html: html }}
         />
 

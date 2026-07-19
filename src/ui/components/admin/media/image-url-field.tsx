@@ -102,7 +102,7 @@ export function ImageUrlField({
             {uploading ? "上传中…" : "将图片拖拽到此处，或从本地选择"}
           </p>
           <p className="mt-1 text-xs text-mist-400">
-            支持 JPG / PNG / WebP / GIF，最大 5MB；上传后会写入数据库，重新部署也不会丢
+            支持 JPG / PNG / WebP / GIF / SVG，最大 25MB；上传后会写入数据库，重新部署也不会丢
           </p>
           <button
             type="button"
@@ -115,7 +115,7 @@ export function ImageUrlField({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
             className="hidden"
             disabled={uploading}
             onChange={(event) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { BlogPost } from "@prisma/client";
 import {
   Field,
@@ -9,6 +9,7 @@ import {
   TextInput,
 } from "@/ui/components/admin/form/fields";
 import { ImageUrlField } from "@/ui/components/admin/media/image-url-field";
+import { ContentMediaInserter } from "@/ui/components/admin/media/content-media-inserter";
 import { initialActionResult } from "@/app/admin/_actions/action-result";
 import type { ActionResult } from "@/app/admin/_actions/action-result";
 
@@ -30,6 +31,9 @@ export function PostForm({
   const [state, formAction, pending] = useActionState(
     action,
     initialActionResult,
+  );
+  const [format, setFormat] = useState<"MARKDOWN" | "HTML">(
+    post?.format ?? "MARKDOWN",
   );
 
   const fieldError = (name: string) => state.fieldErrors?.[name];
@@ -107,7 +111,29 @@ export function PostForm({
       </div>
 
       <Field
-        label="正文（支持 Markdown）"
+        label="正文格式"
+        htmlFor="format"
+        hint={
+          format === "HTML"
+            ? "HTML 模式：可自由使用 HTML/CSS、内联 SVG、图片长图与 PDF/视频 iframe，按原样排版渲染。"
+            : "Markdown 模式：常规图文写作，支持 ![](图片) 与长图。"
+        }
+      >
+        <Select
+          id="format"
+          name="format"
+          value={format}
+          onChange={(event) =>
+            setFormat(event.target.value as "MARKDOWN" | "HTML")
+          }
+        >
+          <option value="MARKDOWN">Markdown（图文）</option>
+          <option value="HTML">HTML / CSS（自由排版）</option>
+        </Select>
+      </Field>
+
+      <Field
+        label={format === "HTML" ? "正文（HTML / CSS）" : "正文（支持 Markdown）"}
         htmlFor="content"
         hint={fieldError("content")}
       >
@@ -119,6 +145,8 @@ export function PostForm({
           required
         />
       </Field>
+
+      <ContentMediaInserter format={format} />
 
       {state.error ? (
         <p className="border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">

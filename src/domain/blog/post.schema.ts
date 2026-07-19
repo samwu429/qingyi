@@ -7,12 +7,14 @@ import { optionalAsciiSlugSchema } from "@/domain/shared/slug.schema";
 // 博客文章创建/更新的校验契约，在服务端 action 信任边界持久化前强制执行。
 
 export const postStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+export const postFormatValues = ["MARKDOWN", "HTML"] as const;
 
 export const postInputSchema = z.object({
   title: z.string().trim().min(1, "请填写文章标题").max(150),
   slug: optionalAsciiSlugSchema(180),
   excerpt: z.string().trim().max(300).optional().or(z.literal("")),
   content: z.string().trim().min(1, "请填写文章正文"),
+  format: z.enum(postFormatValues).default("MARKDOWN"),
   coverUrl: optionalUrlSchema,
   author: z.string().trim().max(60).optional().or(z.literal("")),
   tags: z.array(z.string().trim().min(1).max(24)).max(12).default([]),
