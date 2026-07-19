@@ -51,3 +51,15 @@ export function isCloudinaryConfigured(): boolean {
       publicMediaConfig.cloudinaryUploadPreset,
   );
 }
+
+// Server-side Groq configuration for the on-site chat assistant. The key is
+// optional so the site runs (with the chat disabled) when it is not provided.
+// 站内聊天助手的服务端 Groq 配置。密钥为可选项，未配置时站点照常运行（聊天关闭）。
+export const groqConfig = {
+  apiKey: process.env.GROQ_API_KEY ?? "",
+  model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+} as const;
+
+export function isGroqConfigured(): boolean {
+  return Boolean(groqConfig.apiKey);
+}

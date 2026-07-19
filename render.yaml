@@ -49,3 +49,10 @@ services:
         sync: false
       - key: NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
         sync: false
+      # Groq API key for the on-site chat assistant; set in the Render dashboard.
+      # Leave the model default unless you want to switch Groq models.
+      # 站内聊天助手的 Groq API Key；请在 Render 控制台中设置。除非要切换模型，否则保留默认。
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
