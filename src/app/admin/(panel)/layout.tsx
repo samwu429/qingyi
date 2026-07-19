@@ -4,7 +4,6 @@ import { requireAdmin } from "@/app/admin/_actions/guard";
 import { logoutAction } from "@/app/admin/_actions/auth.actions";
 import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { AdminNav } from "@/ui/components/admin/layout/admin-nav";
-import { siteConfig } from "@/config/site.config";
 
 export const dynamic = "force-dynamic";
 
@@ -22,17 +21,7 @@ export default async function AdminPanelLayout({
     <div className="min-h-screen bg-ink-950">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-8 lg:flex-row">
         <aside className="border border-mist-100/10 bg-white p-5 lg:w-64 lg:flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <BrandLogo variant="mark" linked={false} className="h-10 w-10" />
-            <div className="leading-tight">
-              <p className="font-display text-sm font-bold text-mist-100">
-                {siteConfig.brandName}
-              </p>
-              <p className="text-[10px] uppercase tracking-widest text-mist-400">
-                Admin Console
-              </p>
-            </div>
-          </div>
+          <BrandLogo variant="mark" linked={false} className="h-10 w-10" />
 
           <div className="mt-8">
             <AdminNav />
