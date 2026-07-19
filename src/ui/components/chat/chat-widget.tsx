@@ -35,8 +35,16 @@ const GREETING: Message = {
 };
 
 const posListeners = new Set<() => void>();
+/** Stable server snapshot — must be the same reference every call. */
+const SERVER_POS: OrbPos = { x: EDGE_MARGIN, y: EDGE_MARGIN };
+let clientPosSnapshot: OrbPos = SERVER_POS;
+let clientPosHydrated = false;
 
 function subscribePos(listener: () => void) {
+  if (!clientPosHydrated && typeof window !== "undefined") {
+    clientPosHydrated = true;
+    clientPosSnapshot = readStoredPos() ?? defaultPos();
+  }
   posListeners.add(listener);
   return () => {
     posListeners.delete(listener);
@@ -108,14 +116,15 @@ function readStoredPos(): OrbPos | null {
 }
 
 function getPersistedPos(): OrbPos {
-  return readStoredPos() ?? defaultPos();
+  return clientPosSnapshot;
 }
 
 function getServerPos(): OrbPos {
-  return { x: EDGE_MARGIN, y: EDGE_MARGIN };
+  return SERVER_POS;
 }
 
 function persistPos(pos: OrbPos) {
+  clientPosSnapshot = pos;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
   } catch {
