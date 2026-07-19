@@ -15,7 +15,7 @@ import {
   type ParsedAttachment,
 } from "@/domain/admin-assistant/attachments";
 
-const MAX_TOOL_ROUNDS = 6;
+const MAX_TOOL_ROUNDS = 5;
 
 export interface AdminChatTurn {
   role: "user" | "assistant";
@@ -59,70 +59,35 @@ function buildUserContent(
   attachments: ParsedAttachment[],
 ): string | ChatContentPart[] {
   const { textBlock, imageUrls } = attachmentsToPromptBlocks(attachments);
-  const text = [message.trim(), textBlock].filter(Boolean).join("\n\n");
+  const text = [
+    message.trim() || "请根据附件处理后台数据。",
+    textBlock,
+    imageUrls.length
+      ? "请先阅读截图中的直播数据（粉丝、开播时长、观众、评论、点赞、音浪、收入等），再调用工具写入。"
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   if (imageUrls.length === 0) {
-    return text || "（用户未输入文字，请根据附件处理）";
+    return text;
   }
 
-  const parts: ChatContentPart[] = [
-    { type: "text", text: text || "请阅读附件并按我的意图操作后台数据。" },
-  ];
+  const parts: ChatContentPart[] = [{ type: "text", text }];
   for (const url of imageUrls) {
     parts.push({ type: "image_url", image_url: { url } });
   }
   return parts;
 }
 
-// Vision-only pass: extract structured facts from screenshots without tools.
-// Avoids Groq failures when multimodal + large tool schemas run together.
-// 仅视觉抽取：从截图提取结构化信息，不带工具，避免多模态+大批工具定义一起失败。
-async function extractVisionNotes(
-  message: string,
-  attachments: ParsedAttachment[],
-): Promise<string> {
-  const content = buildUserContent(
-    [
-      "请仔细阅读截图/附件，提取与直播运营相关的全部可读数据。",
-      "尽量结构化列出：主播名/昵称、统计周期或日期、粉丝数、直播收入(元)、开播时长(请换算成分钟)、观众人数、评论人数、点赞次数、收获音浪、其它备注。",
-      "看不清的字段写「未识别」，不要编造。",
-      "用户意图：",
-      message,
-    ].join("\n"),
-    attachments,
-  );
-
-  const completion = await groqChatCompletion({
-    model: groqConfig.visionModel,
-    messages: [
-      {
-        role: "system",
-        content:
-          "你是数据提取助手。只输出从图片/附件中读到的事实清单，不要调用工具，不要编造。",
-      },
-      { role: "user", content },
-    ],
-    temperature: 0.1,
-    maxTokens: 2048,
-  });
-
-  return (
-    completion.message.content?.trim() ||
-    "（视觉模型未返回可读内容，请改用更清晰截图或 CSV）"
-  );
-}
-
 async function runToolLoop(
   messages: ChatMessage[],
   ctx: AdminToolContext,
+  model: string,
 ): Promise<AdminAssistantResult> {
-  // Text tool-calling model (not the vision extract model).
-  // 文本工具调用模型（不用视觉抽取模型）。
-  const toolModel = groqConfig.adminModel || groqConfig.model;
-
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     const completion = await groqChatCompletion({
-      model: toolModel,
+      model,
       messages,
       tools: adminToolDefinitions,
       temperature: 0.2,
@@ -170,9 +135,9 @@ async function runToolLoop(
   };
 }
 
-// Run one admin assistant turn. Images are transcribed first, then a text model
-// performs tool calls — more reliable than vision+tools in one request.
-// 执行一轮后台助手：先识图成文，再用文本模型做工具调用（比视觉+工具同请求更稳）。
+// One admin turn. With images, use the vision model + tools in a single loop
+// (qwen supports both) to cut free-tier request count vs a separate OCR pass.
+// 一轮后台助手。有图时用视觉模型直接带工具循环（qwen 支持），比「先识图再写库」少打一倍请求，减轻限流。
 export async function runAdminAssistant(options: {
   message: string;
   history?: AdminChatTurn[];
@@ -187,34 +152,24 @@ export async function runAdminAssistant(options: {
     actions: [],
   };
 
-  let visionNotes = "";
-  if (hasImages) {
-    visionNotes = await extractVisionNotes(options.message, attachments);
-  }
-
-  const { textBlock } = attachmentsToPromptBlocks(attachments);
-  const userText = [
-    options.message.trim() || "请根据附件处理后台数据。",
-    textBlock,
-    visionNotes
-      ? `【截图识别结果】\n${visionNotes}\n\n请依据以上识别结果与用户意图，调用工具写入本站数据库。`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
   const messages: ChatMessage[] = [
     { role: "system", content: buildSystemPrompt() },
   ];
 
-  for (const turn of history.slice(-8)) {
+  // Keep short history to save tokens / rate-limit budget.
+  // 历史截短，节省 token 与限流额度。
+  for (const turn of history.slice(-4)) {
     messages.push({ role: turn.role, content: turn.content });
   }
 
   messages.push({
     role: "user",
-    content: userText,
+    content: buildUserContent(options.message, attachments),
   });
 
-  return runToolLoop(messages, ctx);
+  const model = hasImages
+    ? groqConfig.visionModel
+    : groqConfig.adminModel || groqConfig.model;
+
+  return runToolLoop(messages, ctx, model);
 }

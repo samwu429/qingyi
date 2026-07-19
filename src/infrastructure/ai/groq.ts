@@ -78,7 +78,10 @@ function mapGroqFailure(status: number, detail: string): GroqError {
     );
   }
   if (status === 429) {
-    return new GroqError("AI 调用过于频繁，请稍后再试", 429);
+    return new GroqError(
+      "Groq 额度限流（免费档每分钟次数有限）。请等待约 30–60 秒后再发一次；勿连续连点发送",
+      429,
+    );
   }
   if (
     status === 413 ||
@@ -190,10 +193,28 @@ export async function streamGroqChat(
   });
 }
 
-// Non-streaming completion with optional tools and multimodal content.
-// Used by the admin operations assistant (tool-calling loop).
-// 非流式补全，支持工具与多模态内容；供后台运营助手的工具调用循环使用。
-export async function groqChatCompletion(options: {
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function parseRetryAfterMs(header: string | null, attempt: number): number {
+  if (header) {
+    const asInt = Number(header);
+    if (Number.isFinite(asInt) && asInt >= 0) {
+      return Math.min(Math.max(asInt * 1000, 1000), 60_000);
+    }
+    const when = Date.parse(header);
+    if (!Number.isNaN(when)) {
+      return Math.min(Math.max(when - Date.now(), 1000), 60_000);
+    }
+  }
+  // 2s, 5s, 12s
+  return [2000, 5000, 12_000][attempt] ?? 12_000;
+}
+
+async function groqChatCompletionOnce(options: {
   messages: ChatMessage[];
   tools?: GroqToolDefinition[];
   model?: string;
@@ -226,7 +247,12 @@ export async function groqChatCompletion(options: {
 
   if (!upstream.ok) {
     const detail = await upstream.text().catch(() => "");
-    throw mapGroqFailure(upstream.status, detail);
+    const error = mapGroqFailure(upstream.status, detail);
+    if (upstream.status === 429) {
+      (error as GroqError & { retryAfterMs?: number }).retryAfterMs =
+        parseRetryAfterMs(upstream.headers.get("retry-after"), 0);
+    }
+    throw error;
   }
 
   const json = (await upstream.json()) as {
@@ -254,4 +280,44 @@ export async function groqChatCompletion(options: {
     },
     finishReason: choice.finish_reason ?? null,
   };
+}
+
+// Non-streaming completion with optional tools and multimodal content.
+// Retries on HTTP 429 so a single admin upload is less likely to fail on free tier.
+// 非流式补全，支持工具与多模态；遇 429 自动退避重试，降低免费档限流失败率。
+export async function groqChatCompletion(options: {
+  messages: ChatMessage[];
+  tools?: GroqToolDefinition[];
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  toolChoice?: "auto" | "none" | "required";
+}): Promise<GroqCompletionResult> {
+  const maxAttempts = 3;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await groqChatCompletionOnce(options);
+    } catch (error) {
+      lastError = error;
+      if (
+        error instanceof GroqError &&
+        error.status === 429 &&
+        attempt < maxAttempts - 1
+      ) {
+        const retryAfterMs =
+          (error as GroqError & { retryAfterMs?: number }).retryAfterMs ??
+          parseRetryAfterMs(null, attempt);
+        console.warn(
+          `groq rate limited, retrying in ${retryAfterMs}ms (attempt ${attempt + 1})`,
+        );
+        await sleep(retryAfterMs);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new GroqError("聊天服务暂时不可用", 502);
 }

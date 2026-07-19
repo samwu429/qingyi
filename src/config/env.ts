@@ -66,12 +66,13 @@ export const groqConfig = {
   // Multimodal model for screenshot OCR / vision extract.
   // 截图 OCR / 视觉抽取用的多模态模型。
   visionModel: process.env.GROQ_VISION_MODEL || "qwen/qwen3.6-27b",
-  // Optional override for admin tool loop; falls back to GROQ_MODEL.
-  // 后台工具循环可选覆盖，未设时回退 GROQ_MODEL。
+  // Optional override for text-only admin tool loop. Default to the lighter
+  // gpt-oss-20b for higher free-tier RPM; override with GROQ_ADMIN_MODEL if needed.
+  // 纯文本后台工具循环可选覆盖。默认用更轻的 gpt-oss-20b 提高免费档每分钟额度。
   adminModel:
     process.env.GROQ_ADMIN_MODEL ||
     process.env.GROQ_MODEL ||
-    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
 } as const;
 
 export function isGroqConfigured(): boolean {
