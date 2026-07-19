@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -30,8 +31,23 @@ const DRAG_THRESHOLD = 6;
 
 const GREETING: Message = {
   role: "assistant",
-  content: `你好，我是青意小助手 👋\n关于${siteConfig.brandName}的签约加入、主播阵容、商务合作或联系方式，都可以问我。`,
+  content: `你好，我是青意小助手。\n关于${siteConfig.brandName}的签约加入、主播阵容、商务合作或联系方式，都可以问我。`,
 };
+
+const posListeners = new Set<() => void>();
+
+function subscribePos(listener: () => void) {
+  posListeners.add(listener);
+  return () => {
+    posListeners.delete(listener);
+  };
+}
+
+function emitPosChange() {
+  for (const listener of posListeners) {
+    listener();
+  }
+}
 
 const SUGGESTIONS = [
   "怎么申请加入签约？",
@@ -91,6 +107,23 @@ function readStoredPos(): OrbPos | null {
   return null;
 }
 
+function getPersistedPos(): OrbPos {
+  return readStoredPos() ?? defaultPos();
+}
+
+function getServerPos(): OrbPos {
+  return { x: EDGE_MARGIN, y: EDGE_MARGIN };
+}
+
+function persistPos(pos: OrbPos) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+  } catch {
+    // Ignore quota / private mode errors.
+  }
+  emitPosChange();
+}
+
 function panelStyle(pos: OrbPos, open: boolean): CSSProperties {
   if (!open || typeof window === "undefined") {
     return { display: "none" };
@@ -135,8 +168,13 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pos, setPos] = useState<OrbPos>(defaultPos);
-  const [ready, setReady] = useState(false);
+  const persistedPos = useSyncExternalStore(
+    subscribePos,
+    getPersistedPos,
+    getServerPos,
+  );
+  const [livePos, setLivePos] = useState<OrbPos | null>(null);
+  const pos = livePos ?? persistedPos;
   const [dragging, setDragging] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -149,13 +187,9 @@ export function ChatWidget() {
   } | null>(null);
 
   useEffect(() => {
-    const stored = readStoredPos();
-    setPos(stored ?? defaultPos());
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    const onResize = () => setPos((current) => clampPos(current));
+    const onResize = () => {
+      setLivePos((current) => clampPos(current ?? getPersistedPos()));
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -193,7 +227,7 @@ export function ChatWidget() {
     }
     if (!drag.moved) return;
 
-    setPos(
+    setLivePos(
       clampPos({
         x: event.clientX - drag.offsetX,
         y: event.clientY - drag.offsetY,
@@ -220,13 +254,9 @@ export function ChatWidget() {
         return;
       }
 
-      setPos((current) => {
-        const snapped = snapToEdge(current);
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(snapped));
-        } catch {
-          // Ignore quota / private mode errors.
-        }
+      setLivePos((current) => {
+        const snapped = snapToEdge(current ?? getPersistedPos());
+        persistPos(snapped);
         return snapped;
       });
     },
@@ -292,10 +322,6 @@ export function ChatWidget() {
     }
   };
 
-  if (!ready) {
-    return null;
-  }
-
   return (
     <>
       <button
@@ -305,14 +331,13 @@ export function ChatWidget() {
         onPointerUp={finishDrag}
         onPointerCancel={finishDrag}
         aria-label={open ? "关闭在线咨询" : "打开在线咨询"}
-        className={`chat-orb z-50${open ? " chat-orb--open" : ""}${
+        className={`chat-orb${open ? " chat-orb--open" : ""}${
           dragging ? " chat-orb--dragging" : ""
         }`}
         style={{
           position: "fixed",
           left: pos.x,
           top: pos.y,
-          zIndex: 50,
         }}
       >
         {open ? (

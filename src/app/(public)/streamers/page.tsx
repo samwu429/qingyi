@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { Container } from "@/ui/components/primitives/container";
 import { PageHeader } from "@/ui/components/layout/page-header/page-header";
@@ -88,7 +89,7 @@ function FilterChip({
 }: {
   href: string;
   active: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link

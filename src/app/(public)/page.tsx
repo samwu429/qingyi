@@ -61,7 +61,7 @@ export default async function HomePage() {
       ) : null}
 
       {featuredStreamers.length > 0 ? (
-        <section className="pb-20">
+        <section className="py-20">
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SectionHeading
@@ -83,7 +83,7 @@ export default async function HomePage() {
       ) : null}
 
       {recentPosts.length > 0 ? (
-        <section className="pb-24">
+        <section className="py-20">
           <Container>
             <div className="flex flex-wrap items-end justify-between gap-6">
               <SectionHeading
@@ -104,7 +104,7 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <section className="pb-24">
+      <section className="pb-24 pt-4">
         <Container>
           <div className="border border-mist-100/10 bg-white px-8 py-14 text-center sm:px-16">
             <h2 className="font-display text-2xl font-bold text-mist-100 sm:text-3xl">

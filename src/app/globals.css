@@ -159,20 +159,6 @@ body {
   pointer-events: none;
 }
 
-.hero-stage__glyph {
-  position: absolute;
-  right: -4%;
-  bottom: -8%;
-  font-family: var(--font-display);
-  font-size: clamp(14rem, 38vw, 28rem);
-  font-weight: 700;
-  line-height: 0.8;
-  color: rgba(255, 255, 255, 0.18);
-  letter-spacing: 0;
-  user-select: none;
-  animation: glyph-drift 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .hero-stage__glyph-mark {
   position: absolute;
   right: 4%;
@@ -274,16 +260,6 @@ body {
   height: auto;
 }
 
-.hero-stage__brand-fallback {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(2.75rem, 7vw, 4.75rem);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: 0.04em;
-  color: var(--color-jade-600);
-}
-
 .hero-stage__title {
   margin: 1.5rem 0 0;
   font-family: var(--font-display);
@@ -329,11 +305,6 @@ body {
 
   .hero-stage__mark {
     display: none;
-  }
-
-  .hero-stage__glyph {
-    right: -18%;
-    opacity: 0.85;
   }
 }
 
@@ -566,6 +537,7 @@ body {
    Do NOT set position here — widget uses inline fixed for dragging.
    助手入口：全站直角里唯一点缀的扁圆环，方印居中。勿在此设 position。 */
 .chat-orb {
+  z-index: 60;
   display: grid;
   place-items: center;
   width: 3.65rem;
@@ -679,7 +651,7 @@ body {
 
 .chat-panel {
   position: fixed;
-  z-index: 50;
+  z-index: 60;
   display: flex;
   height: 32rem;
   max-height: calc(100vh - 6rem);

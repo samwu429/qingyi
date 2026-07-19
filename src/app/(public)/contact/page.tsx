@@ -56,28 +56,34 @@ export default async function ContactPage() {
       <Container className="py-14">
         <div className="grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="overflow-hidden border border-mist-100/10">
-              {rows.map((row) => (
-                <div
-                  key={row.label}
-                  className="flex flex-col gap-1 border-b border-mist-100/10 bg-white p-6 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <span className="text-sm text-mist-400">{row.label}</span>
-                  {row.href ? (
-                    <a
-                      href={row.href}
-                      className="font-medium text-jade-500 hover:underline"
-                    >
-                      {row.value}
-                    </a>
-                  ) : (
-                    <span className="font-medium text-mist-100">
-                      {row.value}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+            {rows.length === 0 ? (
+              <p className="border border-mist-100/10 bg-white p-10 text-center text-mist-400">
+                暂无公开联系方式，欢迎通过「加入我们」在线留言。
+              </p>
+            ) : (
+              <div className="overflow-hidden border border-mist-100/10">
+                {rows.map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex flex-col gap-1 border-b border-mist-100/10 bg-white p-6 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="text-sm text-mist-400">{row.label}</span>
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        className="font-medium text-jade-500 hover:underline"
+                      >
+                        {row.value}
+                      </a>
+                    ) : (
+                      <span className="font-medium text-mist-100">
+                        {row.value}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <aside className="border border-mist-100/10 bg-white p-6">

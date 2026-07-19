@@ -104,7 +104,7 @@ export default async function JoinPage() {
               <p className="mt-3 text-mist-300">{join.contactNote}</p>
             ) : null}
             <p className="mt-4 text-sm text-mist-400">
-              请在右侧填写姓名与联系方式，我们会尽快与你联系。
+              请填写姓名与联系方式，我们会尽快与你联系。
             </p>
           </div>
           <JoinInquiryForm />
