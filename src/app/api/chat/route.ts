@@ -10,6 +10,7 @@ import { buildAssistantSystemPrompt } from "@/domain/assistant/assistant.service
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // Public chat endpoint powering the on-site assistant. Validates and clamps the
 // incoming conversation, prepends a system prompt built from live site content,
@@ -50,7 +51,18 @@ export async function POST(request: Request) {
   const recent = parsed.data.messages.slice(-12);
 
   try {
-    const system = await buildAssistantSystemPrompt();
+    // Bound prompt assembly so a slow DB never leaves the UI on “思考中…”.
+    // 限制系统提示组装时间，避免数据库慢导致界面一直「思考中」。
+    const system = await Promise.race([
+      buildAssistantSystemPrompt(),
+      new Promise<string>((resolve) => {
+        setTimeout(() => {
+          resolve(
+            "你是青意传媒官网客服「青意小助手」。用简体中文简洁回答签约、主播与联系方式问题；具体条款引导用户到 /join 或 /contact。",
+          );
+        }, 4000);
+      }),
+    ]);
     const messages: ChatMessage[] = [
       { role: "system", content: system },
       ...recent,

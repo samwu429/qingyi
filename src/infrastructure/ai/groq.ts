@@ -116,6 +116,12 @@ function mapGroqFailure(status: number, detail: string): GroqError {
   return new GroqError("聊天服务暂时不可用", 502);
 }
 
+const GROQ_FETCH_TIMEOUT_MS = 20_000;
+
+function isGptOssModel(model: string): boolean {
+  return model.includes("gpt-oss");
+}
+
 // Call Groq and return a ReadableStream of decoded assistant text tokens.
 // Parses the SSE protocol and forwards only the incremental content deltas.
 // 调用 Groq 并返回解码后的助手文本 token 流；解析 SSE 协议，仅转发增量内容。
@@ -124,19 +130,42 @@ export async function streamGroqChat(
 ): Promise<ReadableStream<Uint8Array>> {
   assertApiKey();
 
+  const model = groqConfig.model;
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    temperature: 0.6,
+    max_tokens: 1024,
+    stream: true,
+  };
+  // Reasoning models may burn the whole budget on hidden thought and never
+  // emit content — keep public chat snappy when someone still points GROQ_MODEL
+  // at gpt-oss-*.
+  // 推理模型可能把额度耗在思考上迟迟不出正文；若仍指向 gpt-oss 则压低推理。
+  if (isGptOssModel(model)) {
+    body.include_reasoning = false;
+    body.reasoning_effort = "low";
+  }
+
   const upstream = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${groqConfig.apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: groqConfig.model,
-      messages,
-      temperature: 0.6,
-      max_tokens: 1024,
-      stream: true,
-    }),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(GROQ_FETCH_TIMEOUT_MS),
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      throw new GroqError(
+        "AI 响应超时。请在 Render 把 GROQ_MODEL 设为 llama-3.1-8b-instant 后重试",
+        504,
+      );
+    }
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new GroqError("AI 请求已中断，请重试", 504);
+    }
+    throw error;
   });
 
   if (!upstream.ok || !upstream.body) {
@@ -150,41 +179,54 @@ export async function streamGroqChat(
   let buffer = "";
 
   return new ReadableStream<Uint8Array>({
-    async pull(controller) {
+    async start(controller) {
       try {
-        const { done, value } = await reader.read();
-        if (done) {
-          controller.close();
-          return;
-        }
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) {
-            continue;
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
           }
-          const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") {
-            controller.close();
-            return;
-          }
-          try {
-            const json = JSON.parse(payload) as {
-              choices?: { delta?: { content?: string } }[];
-            };
-            const token = json.choices?.[0]?.delta?.content;
-            if (token) {
-              controller.enqueue(encoder.encode(token));
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) {
+              continue;
             }
-          } catch {
-            // Ignore keep-alive/comment lines that are not valid JSON.
-            // 忽略非合法 JSON 的保活/注释行。
+            const payload = trimmed.slice(5).trim();
+            if (payload === "[DONE]") {
+              controller.close();
+              return;
+            }
+            try {
+              const json = JSON.parse(payload) as {
+                choices?: {
+                  delta?: { content?: string | null };
+                  message?: { content?: string | null };
+                }[];
+              };
+              const token =
+                json.choices?.[0]?.delta?.content ??
+                json.choices?.[0]?.message?.content;
+              if (token) {
+                controller.enqueue(encoder.encode(token));
+              }
+            } catch {
+              // Ignore keep-alive/comment lines that are not valid JSON.
+              // 忽略非合法 JSON 的保活/注释行。
+            }
           }
         }
+        controller.close();
       } catch (error) {
         controller.error(error);
+      } finally {
+        try {
+          reader.releaseLock();
+        } catch {
+          // ignore
+        }
       }
     },
     cancel() {
@@ -243,6 +285,12 @@ async function groqChatCompletionOnce(options: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(GROQ_FETCH_TIMEOUT_MS),
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      throw new GroqError("AI 响应超时，请稍后重试", 504);
+    }
+    throw error;
   });
 
   if (!upstream.ok) {

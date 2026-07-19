@@ -290,6 +290,9 @@ export function ChatWidget() {
     setMessages([...outgoing, { role: "assistant", content: "" }]);
     setSending(true);
 
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 25_000);
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -297,6 +300,7 @@ export function ChatWidget() {
         body: JSON.stringify({
           messages: [...history, { role: "user", content: trimmed }],
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -325,8 +329,15 @@ export function ChatWidget() {
       }
     } catch (err) {
       setMessages((prev) => prev.slice(0, -1));
-      setError(err instanceof Error ? err.message : "回复失败，请稍后重试。");
+      const message =
+        err instanceof Error && err.name === "AbortError"
+          ? "回复超时，请稍后重试。若持续失败，请在 Render 将 GROQ_MODEL 设为 llama-3.1-8b-instant"
+          : err instanceof Error
+            ? err.message
+            : "回复失败，请稍后重试。";
+      setError(message);
     } finally {
+      window.clearTimeout(timeoutId);
       setSending(false);
     }
   };

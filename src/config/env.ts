@@ -58,21 +58,17 @@ export function isCloudinaryConfigured(): boolean {
 // 站内客服与后台运营助手的 Groq 配置。密钥为可选项，未配置时站点照常运行（AI 关闭）。
 export const groqConfig = {
   apiKey: process.env.GROQ_API_KEY ?? "",
-  // Public chat + admin tool loop (text). Prefer a currently-served Groq model;
-  // Llama 3.3 / Llama 4 Scout were decommissioned on free/dev tiers in Jul 2026.
-  // 前台客服与后台工具循环（文本）。使用 Groq 当前仍提供的模型；
-  // Llama 3.3 / Llama 4 Scout 已于 2026-07 在免费/开发者档下线。
-  model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+  // Public FAQ chat: prefer a fast non-reasoning production model. Reasoning
+  // models (gpt-oss-*) can stall for a long time before the first content token.
+  // 前台客服：优先快速、非推理生产模型。gpt-oss 等推理模型可能长时间不出字。
+  model: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
   // Multimodal model for screenshot OCR / vision extract.
   // 截图 OCR / 视觉抽取用的多模态模型。
   visionModel: process.env.GROQ_VISION_MODEL || "qwen/qwen3.6-27b",
-  // Optional override for text-only admin tool loop. Default to the lighter
-  // gpt-oss-20b for higher free-tier RPM; override with GROQ_ADMIN_MODEL if needed.
-  // 纯文本后台工具循环可选覆盖。默认用更轻的 gpt-oss-20b 提高免费档每分钟额度。
-  adminModel:
-    process.env.GROQ_ADMIN_MODEL ||
-    process.env.GROQ_MODEL ||
-    "openai/gpt-oss-20b",
+  // Admin tool loop: keep a stronger text model; do not inherit GROQ_MODEL when
+  // that is the lightweight public chat default.
+  // 后台工具循环用更强文本模型；勿在前台默认轻量模型时一并继承。
+  adminModel: process.env.GROQ_ADMIN_MODEL || "openai/gpt-oss-20b",
 } as const;
 
 export function isGroqConfigured(): boolean {
