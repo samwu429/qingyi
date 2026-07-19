@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { joinInquiryInputSchema } from "@/domain/inquiries/inquiry.schema";
 import { inquiryService } from "@/domain/inquiries/inquiry.service";
 import {
@@ -29,5 +30,7 @@ export async function submitJoinInquiryAction(
   }
 
   await inquiryService.create(parsed.data);
+  revalidatePath("/admin");
+  revalidatePath("/admin/inquiries");
   return { error: null, ok: true };
 }

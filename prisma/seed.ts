@@ -277,55 +277,35 @@ async function clearLegacyDiskUploads(): Promise<void> {
   }
 }
 
-// Push professional site copy into SiteSetting so redeploys refresh public
-// pages even when older admin JSON is already stored.
-// 把专业站点文案写入 SiteSetting，即使后台已有旧 JSON，重新部署也能刷新前台。
-async function syncSiteContentCopy(): Promise<void> {
+// Seed default page copy only when a key is missing. Never overwrite existing
+// SiteSetting rows — redeploys used to wipe admin edits to 页面内容.
+// 仅在缺失时写入默认页面文案。绝不覆盖已有 SiteSetting——
+// 过去每次重新部署都会冲掉后台「页面内容」的修改。
+async function seedSiteContentDefaults(): Promise<void> {
+  let created = 0;
   for (const key of Object.keys(siteContentRegistry) as Array<
     keyof typeof siteContentRegistry
   >) {
+    const existing = await prisma.siteSetting.findUnique({ where: { key } });
+    if (existing) {
+      continue;
+    }
     const value = siteContentRegistry[key].default;
-    await prisma.siteSetting.upsert({
-      where: { key },
-      create: { key, value: value as unknown as Prisma.InputJsonValue },
-      update: { value: value as unknown as Prisma.InputJsonValue },
+    await prisma.siteSetting.create({
+      data: { key, value: value as unknown as Prisma.InputJsonValue },
     });
+    created += 1;
   }
-  console.info("Synced professional site content copy.");
-}
-
-async function refreshSamplePostsCopy(): Promise<void> {
-  await prisma.blogPost.updateMany({
-    where: { slug: "qingyi-media-launch" },
-    data: {
-      title: "青意传媒启航：做创意内容产业里的创作者陪跑",
-      excerpt:
-        "从人设真实感、算法可见性到内容 IP 变现，我们把直播公会做成可执行的内容产业陪跑。",
-      content:
-        "## 我们如何定位\n\n青意传媒面向直播与短视频的创意内容产业，服务创作者孵化、平台分发与商业变现。\n\n平台与技术只是分发层；真正决定结果的，是人设与内容策略、运营组织与可持续变现。\n\n## 我们提供什么\n\n- 人设与真实感运营培训\n- 算法可见性与排播复盘\n- 内容 IP 合作与透明分成\n\n欢迎加入，把个人创意做成可复利的内容事业。",
-      tags: ["公告", "公会动态"],
-    },
-  });
-
-  await prisma.blogPost.updateMany({
-    where: { slug: "streamer-growth-guide" },
-    data: {
-      title: "创作者成长路径：从定位到变现的五个阶段",
-      excerpt:
-        "把开播拆成可执行阶段：人设定位、内容打磨、算法可见性、粉丝黏性与商业闭环。",
-      content:
-        "## 阶段一：人设定位\n\n明确内容赛道与可识别的人设标签，避免「什么都播、谁都不记得」。\n\n## 阶段二：内容打磨\n\n固定排播，迭代话术、节奏与镜头真实感。\n\n## 阶段三：算法可见性\n\n结合平台活动与推荐逻辑，做曝光与留存的数据复盘。\n\n## 阶段四：粉丝黏性\n\n把互动经营成持续陪伴关系，沉淀社群与回访。\n\n## 阶段五：内容 IP 变现\n\n对接打赏、品牌与电商，形成可复用的收入结构。",
-      tags: ["运营复盘", "创作者成长"],
-    },
-  });
+  if (created > 0) {
+    console.info(`Seeded ${created} missing site content key(s).`);
+  }
 }
 
 async function main(): Promise<void> {
   await seedAdmin();
   await seedStreamers();
   await seedPosts();
-  await refreshSamplePostsCopy();
-  await syncSiteContentCopy();
+  await seedSiteContentDefaults();
   await normalizeNonAsciiSlugs();
   await clearLegacyDiskUploads();
 }

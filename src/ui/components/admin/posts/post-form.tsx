@@ -146,7 +146,7 @@ export function PostForm({
         />
       </Field>
 
-      <ContentMediaInserter format={format} />
+      <ContentMediaInserter format={format} targetFieldId="content" />
 
       {state.error ? (
         <p className="border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">

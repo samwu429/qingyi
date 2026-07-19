@@ -217,7 +217,7 @@ export function StreamerForm({
         />
       </Field>
 
-      <ContentMediaInserter format={bioFormat} />
+      <ContentMediaInserter format={bioFormat} targetFieldId="bio" />
 
       <fieldset className="border border-mist-100/10 p-5">
         <legend className="px-2 text-sm font-medium text-mist-200">

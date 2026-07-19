@@ -47,13 +47,22 @@ export function ImageUrlField({
     try {
       const body = new FormData();
       body.append("file", file);
+      body.append("filename", file.name);
       const response = await fetch("/api/admin/media/upload", {
         method: "POST",
         body,
       });
-      const data = (await response.json()) as { url?: string; error?: string };
+      const raw = await response.text();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = JSON.parse(raw) as { url?: string; error?: string };
+      } catch {
+        throw new Error(
+          response.ok ? "上传响应异常" : `上传失败（${response.status}）`,
+        );
+      }
       if (!response.ok || !data.url) {
-        throw new Error(data.error ?? "upload failed");
+        throw new Error(data.error ?? "上传失败");
       }
       setValue(data.url);
     } catch (error) {
@@ -115,7 +124,7 @@ export function ImageUrlField({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.jpg,.jpeg,.png,.webp,.gif,.svg"
             className="hidden"
             disabled={uploading}
             onChange={(event) => {

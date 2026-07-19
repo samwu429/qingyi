@@ -3,6 +3,10 @@ import {
   publicMediaConfig,
 } from "@/config/env";
 import { prisma } from "@/infrastructure/database/prisma/client";
+import {
+  resolveMediaMime,
+  withResolvedMime,
+} from "@/infrastructure/media/upload/mime";
 
 // Media upload helpers for the admin panel. Prefer Cloudinary when configured;
 // otherwise store bytes in Postgres and expose them via /api/media/:id so images
@@ -10,12 +14,6 @@ import { prisma } from "@/infrastructure/database/prisma/client";
 // 后台媒体上传辅助：已配置 Cloudinary 时优先使用；否则把字节写入 Postgres，
 // 并通过 /api/media/:id 对外提供，避免 Render 重新部署清空本地 public/uploads。
 
-// Raster images go through Cloudinary when configured; everything else (SVG /
-// PDF, and images when Cloudinary is off) is stored in Postgres and served from
-// /api/media/:id. SVG and PDF are treated as documents so they can be embedded
-// in 资讯 articles (SVG illustrations, long screenshots, PDF reports).
-// 位图在配置了 Cloudinary 时走云端；其余（SVG / PDF，以及未配置 Cloudinary 时的图片）
-// 存入 Postgres，通过 /api/media/:id 提供，可在资讯文章中嵌入。
 const RASTER_IMAGE_MIME = new Set([
   "image/jpeg",
   "image/png",
@@ -39,7 +37,8 @@ function isAllowedMime(type: string): boolean {
 }
 
 export function assertValidMediaFile(file: File): void {
-  if (!isAllowedMime(file.type)) {
+  const mime = resolveMediaMime(file.type, file.name);
+  if (!mime || !isAllowedMime(mime)) {
     throw new MediaUploadError(
       "仅支持 JPG / PNG / WebP / GIF / SVG 图片或 PDF 文件",
     );
@@ -68,11 +67,11 @@ async function uploadToCloudinary(file: File): Promise<string> {
   return data.secure_url;
 }
 
-async function uploadToDatabase(file: File): Promise<string> {
+async function uploadToDatabase(file: File, mime: string): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
   const asset = await prisma.mediaAsset.create({
     data: {
-      mimeType: file.type,
+      mimeType: mime,
       byteSize: buffer.byteLength,
       data: buffer,
     },
@@ -82,14 +81,30 @@ async function uploadToDatabase(file: File): Promise<string> {
 }
 
 // Persist an uploaded file and return a publicly reachable URL. SVG and PDF are
-// always stored in Postgres (served with hardened headers); raster images use
-// Cloudinary when configured, otherwise Postgres.
-// 持久化上传文件并返回可公开访问地址。SVG 与 PDF 一律存入 Postgres（以加固响应头提供）；
-// 位图在配置了 Cloudinary 时走云端，否则存入 Postgres。
+// always stored in Postgres. Raster images try Cloudinary when configured, then
+// fall back to Postgres so a broken cloud preset never blocks uploads.
+// 持久化上传并返回可访问地址。SVG/PDF 一律进 Postgres；位图在配置了 Cloudinary
+// 时先试云端，失败则回退 Postgres，避免云配置错误导致上传全挂。
 export async function persistAdminImage(file: File): Promise<string> {
-  assertValidMediaFile(file);
-  if (RASTER_IMAGE_MIME.has(file.type) && isCloudinaryConfigured()) {
-    return uploadToCloudinary(file);
+  const mime = resolveMediaMime(file.type, file.name);
+  if (!mime || !isAllowedMime(mime)) {
+    throw new MediaUploadError(
+      "仅支持 JPG / PNG / WebP / GIF / SVG 图片或 PDF 文件",
+    );
   }
-  return uploadToDatabase(file);
+  if (file.size <= 0 || file.size > MAX_BYTES) {
+    throw new MediaUploadError("文件大小需在 25MB 以内");
+  }
+
+  const normalized = withResolvedMime(file, mime);
+
+  if (RASTER_IMAGE_MIME.has(mime) && isCloudinaryConfigured()) {
+    try {
+      return await uploadToCloudinary(normalized);
+    } catch (error) {
+      console.error("cloudinary upload failed, falling back to database", error);
+    }
+  }
+
+  return uploadToDatabase(normalized, mime);
 }

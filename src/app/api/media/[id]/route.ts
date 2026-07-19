@@ -23,8 +23,10 @@ export async function GET(
     return new NextResponse("Not found", { status: 404 });
   }
 
+  const bytes = new Uint8Array(asset.data);
   const headers: Record<string, string> = {
-    "Content-Type": asset.mimeType,
+    "Content-Type": asset.mimeType || "application/octet-stream",
+    "Content-Length": String(bytes.byteLength),
     "Cache-Control": "public, max-age=31536000, immutable",
     "X-Content-Type-Options": "nosniff",
   };
@@ -40,7 +42,7 @@ export async function GET(
     headers["Content-Disposition"] = "inline";
   }
 
-  return new NextResponse(new Uint8Array(asset.data), {
+  return new NextResponse(bytes, {
     status: 200,
     headers,
   });
