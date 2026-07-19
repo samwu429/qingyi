@@ -66,20 +66,26 @@ export const siteContentService = {
     key: K,
   ): Promise<(typeof siteContentRegistry)[K]["default"]> {
     const entry = siteContentRegistry[key];
-    const stored = await siteSettingRepository.find(key);
-    if (!stored) {
+    try {
+      const stored = await siteSettingRepository.find(key);
+      if (!stored) {
+        return entry.default;
+      }
+
+      const merged = {
+        ...entry.default,
+        ...(stored.value as Record<string, unknown>),
+      };
+      const parsed = entry.schema.safeParse(merged);
+      const value = (
+        parsed.success ? parsed.data : entry.default
+      ) as (typeof siteContentRegistry)[K]["default"];
+      return sanitizeContent(key, value);
+    } catch {
+      // DB unreachable (e.g. local Postgres down) — keep the public site up.
+      // 数据库不可达（如本地 Postgres 未启动）时回退默认文案，避免前台整页崩溃。
       return entry.default;
     }
-
-    const merged = {
-      ...entry.default,
-      ...(stored.value as Record<string, unknown>),
-    };
-    const parsed = entry.schema.safeParse(merged);
-    const value = (
-      parsed.success ? parsed.data : entry.default
-    ) as (typeof siteContentRegistry)[K]["default"];
-    return sanitizeContent(key, value);
   },
 
   async save<K extends SiteContentKey>(

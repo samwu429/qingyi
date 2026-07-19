@@ -14,10 +14,12 @@ import { postService } from "@/domain/blog/post.service";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  // Degrade individually so a downed local DB does not blank the whole page.
+  // 单项降级：本地数据库未启动时仍渲染默认首页，避免整页白屏。
   const [home, featuredStreamers, recentPosts] = await Promise.all([
     siteContentService.get("home"),
-    streamerService.listFeatured(6),
-    postService.listRecent(3),
+    streamerService.listFeatured(6).catch(() => []),
+    postService.listRecent(3).catch(() => []),
   ]);
 
   return (
