@@ -58,96 +58,98 @@ export function SiteHeader() {
           className="h-8 w-auto max-w-[min(220px,46vw)] object-contain object-left sm:h-9 sm:max-w-[260px]"
         />
 
-        <nav className="hidden items-center gap-1 md:flex">
-          {siteConfig.primaryNavigation.map((item) => {
-            if (item.children?.length) {
-              return (
-                <div
-                  key={item.href}
-                  ref={aboutWrapRef}
-                  className="relative"
-                  onMouseEnter={() => setAboutOpen(true)}
-                  onMouseLeave={() => setAboutOpen(false)}
-                >
-                  <button
-                    type="button"
-                    className={cn(
-                      "inline-flex items-center gap-1 px-3.5 py-2 text-sm font-medium transition-colors",
-                      aboutActive || aboutOpen
-                        ? "bg-ink-850 text-jade-600"
-                        : "text-mist-300 hover:text-mist-100",
-                    )}
-                    aria-expanded={aboutOpen}
-                    aria-controls={aboutMenuId}
-                    aria-haspopup="menu"
-                    onClick={() => setAboutOpen((value) => !value)}
-                  >
-                    {item.label}
-                    <span className="text-[0.65rem] opacity-70" aria-hidden>
-                      ▾
-                    </span>
-                  </button>
-
+        <div className="hidden items-center gap-2 md:flex">
+          <nav className="flex items-center gap-1">
+            {siteConfig.primaryNavigation.map((item) => {
+              if (item.children?.length) {
+                return (
                   <div
-                    id={aboutMenuId}
-                    role="menu"
-                    className={cn(
-                      "absolute left-0 top-full z-50 min-w-[9.5rem] border border-mist-100/10 bg-white py-1 shadow-[0_12px_28px_-16px_rgba(40,40,40,0.35)]",
-                      aboutOpen ? "visible opacity-100" : "invisible opacity-0",
-                    )}
+                    key={item.href}
+                    ref={aboutWrapRef}
+                    className="relative"
+                    onMouseEnter={() => setAboutOpen(true)}
+                    onMouseLeave={() => setAboutOpen(false)}
                   >
-                    <Link
-                      href={item.href}
-                      role="menuitem"
-                      onClick={() => setAboutOpen(false)}
+                    <button
+                      type="button"
                       className={cn(
-                        "block px-4 py-2.5 text-sm transition-colors",
-                        isActive(item.href)
+                        "inline-flex items-center gap-1 px-3.5 py-2 text-sm font-medium transition-colors",
+                        aboutActive || aboutOpen
                           ? "bg-ink-850 text-jade-600"
-                          : "text-mist-300 hover:bg-ink-950 hover:text-mist-100",
+                          : "text-mist-300 hover:text-mist-100",
                       )}
+                      aria-expanded={aboutOpen}
+                      aria-controls={aboutMenuId}
+                      aria-haspopup="menu"
+                      onClick={() => setAboutOpen((value) => !value)}
                     >
                       {item.label}
-                    </Link>
-                    {item.children.map((child) => (
+                      <span className="text-[0.65rem] opacity-70" aria-hidden>
+                        ▾
+                      </span>
+                    </button>
+
+                    <div
+                      id={aboutMenuId}
+                      role="menu"
+                      className={cn(
+                        "absolute right-0 top-full z-50 min-w-[9.5rem] border border-mist-100/10 bg-white py-1 shadow-[0_12px_28px_-16px_rgba(40,40,40,0.35)]",
+                        aboutOpen
+                          ? "visible opacity-100"
+                          : "invisible opacity-0",
+                      )}
+                    >
                       <Link
-                        key={child.href}
-                        href={child.href}
+                        href={item.href}
                         role="menuitem"
                         onClick={() => setAboutOpen(false)}
                         className={cn(
                           "block px-4 py-2.5 text-sm transition-colors",
-                          isActive(child.href)
+                          isActive(item.href)
                             ? "bg-ink-850 text-jade-600"
                             : "text-mist-300 hover:bg-ink-950 hover:text-mist-100",
                         )}
                       >
-                        {child.label}
+                        {item.label}
                       </Link>
-                    ))}
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          role="menuitem"
+                          onClick={() => setAboutOpen(false)}
+                          className={cn(
+                            "block px-4 py-2.5 text-sm transition-colors",
+                            isActive(child.href)
+                              ? "bg-ink-850 text-jade-600"
+                              : "text-mist-300 hover:bg-ink-950 hover:text-mist-100",
+                          )}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "px-3.5 py-2 text-sm font-medium transition-colors",
+                    isActive(item.href)
+                      ? "bg-ink-850 text-jade-600"
+                      : "text-mist-300 hover:text-mist-100",
+                  )}
+                >
+                  {item.label}
+                </Link>
               );
-            }
+            })}
+          </nav>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "px-3.5 py-2 text-sm font-medium transition-colors",
-                  isActive(item.href)
-                    ? "bg-ink-850 text-jade-600"
-                    : "text-mist-300 hover:text-mist-100",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="hidden md:block">
           <Link
             href="/join"
             className="bg-jade-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-jade-600"
