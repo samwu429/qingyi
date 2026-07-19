@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { siteConfig } from "@/config/site.config";
+import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { Container } from "@/ui/components/primitives/container";
 import { cn } from "@/lib/ui/cn";
 
-// Public site header: brand mark leads, navigation stays quiet, CTA is square.
-// 公共页头：品牌标识主导，导航克制，行动按钮为直角。
+// Public site header: official VI primary lockup, quiet nav, square CTA.
+// 公共页头：正式 VI 主标识、克制导航、直角行动按钮。
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -17,21 +18,13 @@ export function SiteHeader() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-mist-100/10 bg-white/85 backdrop-blur-md">
-      <Container className="flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-3" aria-label="返回首页">
-          <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-bold text-white">
-            青
-          </span>
-          <span className="flex flex-col leading-tight">
-            <span className="font-display text-base font-bold text-mist-100">
-              {siteConfig.brandName}
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-mist-400">
-              {siteConfig.brandNameEn}
-            </span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-50 border-b border-mist-100/10 bg-white/90 backdrop-blur-md">
+      <Container className="flex h-16 items-center justify-between gap-4">
+        <BrandLogo
+          variant="primary"
+          priority
+          className="h-8 w-auto max-w-[min(220px,46vw)] object-contain object-left sm:h-9 sm:max-w-[260px]"
+        />
 
         <nav className="hidden items-center gap-1 md:flex">
           {siteConfig.primaryNavigation.map((item) => (
@@ -88,6 +81,13 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/join"
+              onClick={() => setOpen(false)}
+              className="mt-2 bg-jade-500 px-4 py-3 text-center text-sm font-semibold text-white"
+            >
+              申请加入
+            </Link>
           </Container>
         </div>
       ) : null}

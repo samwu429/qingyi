@@ -1,25 +1,22 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site.config";
+import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { Container } from "@/ui/components/primitives/container";
 
-// Global footer on a deep green band for contrast against the light page body.
-// 全局页脚使用深绿色带，与浅色页面主体形成对比。
+// Dark footer band: transparent On Dark lockup per VI (no baked black logo tile).
+// 深色页脚：按 VI 使用透明 On Dark 标志，不用自带黑底的色块标。
 export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-24 bg-[#0f1f1b] text-white">
+    <footer className="mt-24 bg-[#121212] text-white">
       <Container className="grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
-          <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-bold text-white">
-              青
-            </span>
-            <span className="font-display text-base font-bold">
-              {siteConfig.brandName}
-            </span>
-          </div>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/65">
+          <BrandLogo
+            variant="onDark"
+            className="h-10 w-auto max-w-[280px] object-contain object-left"
+          />
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/65">
             {siteConfig.description}
           </p>
         </div>

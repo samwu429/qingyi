@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/brand/QingyiMedia_Mark.svg" }],
+  },
 };
 
 export default function RootLayout({

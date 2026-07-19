@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 /*
-  Light editorial system for Qingyi Media: cool paper ground, deep charcoal
-  type, and a saturated "qing" green accent. Corners stay square throughout.
-  青意传媒浅色编辑风：冷纸色底、深墨字色、饱和青绿强调；全局直角。
+  VI v2.1: Paper ground, charcoal Ink type, Sage seal accent (#689078).
+  Class names keep `jade-*` for compatibility; values map to brand Sage.
+  VI v2.1：纸色底、炭黑字、青绿印面主色。类名保留 jade-*，色值对齐 Sage。
 */
 @theme {
-  --color-ink-950: #f3f7f5;
+  --color-ink-950: #f4f2ee;
   --color-ink-900: #ffffff;
-  --color-ink-850: #e9f0ed;
-  --color-ink-800: #dce7e2;
-  --color-ink-700: #c9d8d1;
-  --color-ink-600: #a8bfb6;
+  --color-ink-850: #ebe7e0;
+  --color-ink-800: #e0dbd2;
+  --color-ink-700: #cfc8bc;
+  --color-ink-600: #b5ada0;
 
-  --color-mist-100: #0f1f1b;
-  --color-mist-200: #1b2e29;
-  --color-mist-300: #3d524c;
-  --color-mist-400: #5f746d;
+  --color-mist-100: #282828;
+  --color-mist-200: #3a3a3a;
+  --color-mist-300: #5a5a5a;
+  --color-mist-400: #7a7a7a;
 
-  --color-jade-300: #0a6b54;
-  --color-jade-400: #0b7a5f;
-  --color-jade-500: #0c8a6b;
-  --color-jade-600: #086b52;
+  --color-jade-300: #5a7f6a;
+  --color-jade-400: #628a72;
+  --color-jade-500: #689078;
+  --color-jade-600: #4f735e;
 
   --color-background: var(--color-ink-950);
   --color-foreground: var(--color-mist-100);
@@ -48,20 +48,32 @@ html {
   scroll-behavior: smooth;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 body {
   background-color: var(--color-background);
   background-image:
     radial-gradient(
       90% 70% at 0% 0%,
-      rgba(12, 138, 107, 0.08) 0%,
+      rgba(104, 144, 120, 0.1) 0%,
       transparent 55%
     ),
     radial-gradient(
       70% 50% at 100% 10%,
-      rgba(15, 31, 27, 0.04) 0%,
+      rgba(40, 40, 40, 0.04) 0%,
       transparent 50%
     ),
-    linear-gradient(180deg, #f7faf8 0%, #f3f7f5 40%, #eef4f1 100%);
+    linear-gradient(180deg, #f7f5f1 0%, #f4f2ee 42%, #efebe4 100%);
   background-attachment: fixed;
   color: var(--color-foreground);
   font-family: var(--font-sans);
@@ -69,7 +81,7 @@ body {
 }
 
 ::selection {
-  background: rgba(12, 138, 107, 0.18);
+  background: rgba(104, 144, 120, 0.22);
   color: var(--color-mist-100);
 }
 
@@ -89,7 +101,7 @@ body {
   isolation: isolate;
   min-height: calc(100vh - 4rem);
   overflow: hidden;
-  background: #e8f1ed;
+  background: #ebe7e0;
 }
 
 .hero-stage__media {
@@ -110,7 +122,7 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(135deg, #f7faf8 0%, #e6f2ec 38%, #0c8a6b 100%);
+    linear-gradient(135deg, #f7f5f1 0%, #e4ebe5 36%, #689078 100%);
   animation: fade-in 900ms ease both;
 }
 
@@ -121,13 +133,13 @@ body {
   background:
     radial-gradient(
       55% 70% at 78% 42%,
-      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.32) 0%,
       transparent 62%
     ),
     linear-gradient(
       90deg,
-      rgba(247, 250, 248, 0.92) 0%,
-      rgba(247, 250, 248, 0.55) 34%,
+      rgba(244, 242, 238, 0.94) 0%,
+      rgba(244, 242, 238, 0.55) 34%,
       transparent 58%
     );
 }
@@ -140,8 +152,8 @@ body {
     0deg,
     transparent,
     transparent 46px,
-    rgba(15, 31, 27, 0.04) 46px,
-    rgba(15, 31, 27, 0.04) 47px
+    rgba(40, 40, 40, 0.035) 46px,
+    rgba(40, 40, 40, 0.035) 47px
   );
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -158,6 +170,18 @@ body {
   color: rgba(255, 255, 255, 0.18);
   letter-spacing: 0;
   user-select: none;
+  animation: glyph-drift 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-stage__glyph-mark {
+  position: absolute;
+  right: 4%;
+  bottom: 6%;
+  width: min(42vw, 22rem);
+  height: auto;
+  opacity: 0.22;
+  user-select: none;
+  pointer-events: none;
   animation: glyph-drift 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -212,18 +236,18 @@ body {
   background:
     linear-gradient(
       90deg,
-      rgba(247, 250, 248, 0.96) 0%,
-      rgba(247, 250, 248, 0.9) 28%,
-      rgba(247, 250, 248, 0.42) 52%,
-      rgba(247, 250, 248, 0.08) 72%,
+      rgba(244, 242, 238, 0.96) 0%,
+      rgba(244, 242, 238, 0.9) 28%,
+      rgba(244, 242, 238, 0.42) 52%,
+      rgba(244, 242, 238, 0.08) 72%,
       transparent 100%
     ),
     linear-gradient(
       180deg,
-      rgba(247, 250, 248, 0.2) 0%,
+      rgba(244, 242, 238, 0.2) 0%,
       transparent 28%,
       transparent 72%,
-      rgba(15, 31, 27, 0.08) 100%
+      rgba(40, 40, 40, 0.08) 100%
     );
 }
 
@@ -244,6 +268,13 @@ body {
 }
 
 .hero-stage__brand {
+  margin: 0;
+  display: block;
+  width: min(22rem, 82vw);
+  height: auto;
+}
+
+.hero-stage__brand-fallback {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(2.75rem, 7vw, 4.75rem);
@@ -283,10 +314,10 @@ body {
     background:
       linear-gradient(
         180deg,
-        rgba(247, 250, 248, 0.94) 0%,
-        rgba(247, 250, 248, 0.88) 48%,
-        rgba(247, 250, 248, 0.55) 72%,
-        rgba(247, 250, 248, 0.2) 100%
+        rgba(244, 242, 238, 0.94) 0%,
+        rgba(244, 242, 238, 0.88) 48%,
+        rgba(244, 242, 238, 0.55) 72%,
+        rgba(244, 242, 238, 0.2) 100%
       );
   }
 
@@ -354,7 +385,7 @@ body {
   background-image:
     linear-gradient(
       120deg,
-      rgba(12, 138, 107, 0.07) 0%,
+      rgba(104, 144, 120, 0.09) 0%,
       transparent 42%
     ),
     linear-gradient(0deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.2));
@@ -374,7 +405,7 @@ body {
 }
 
 .card-surface:hover {
-  border-color: rgba(12, 138, 107, 0.55);
+  border-color: rgba(104, 144, 120, 0.55);
   background: #fbfdfc;
 }
 
@@ -553,17 +584,17 @@ body {
   background:
     radial-gradient(
       circle at 32% 28%,
-      #7ee0c4 0%,
-      #2bb894 22%,
+      #c5d6cb 0%,
+      #8aa996 22%,
       var(--color-jade-500) 48%,
       var(--color-jade-600) 78%,
-      #04543f 100%
+      #3a5746 100%
     );
   box-shadow:
-    0 14px 28px -8px rgba(4, 60, 45, 0.55),
-    0 6px 12px -4px rgba(4, 60, 45, 0.35),
-    inset 0 2px 3px rgba(255, 255, 255, 0.45),
-    inset 0 -6px 12px rgba(4, 40, 30, 0.35);
+    0 14px 28px -8px rgba(40, 60, 48, 0.45),
+    0 6px 12px -4px rgba(40, 60, 48, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.4),
+    inset 0 -6px 12px rgba(30, 45, 36, 0.35);
   transition:
     box-shadow 180ms ease,
     filter 180ms ease;
@@ -578,10 +609,10 @@ body {
   transition: none;
   filter: brightness(1.06);
   box-shadow:
-    0 20px 36px -8px rgba(4, 60, 45, 0.65),
-    0 8px 14px -4px rgba(4, 60, 45, 0.45),
-    inset 0 2px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -6px 12px rgba(4, 40, 30, 0.3);
+    0 20px 36px -8px rgba(40, 60, 48, 0.55),
+    0 8px 14px -4px rgba(40, 60, 48, 0.4),
+    inset 0 2px 3px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 12px rgba(30, 45, 36, 0.3);
 }
 
 .chat-orb::before {
@@ -617,17 +648,17 @@ body {
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
-  text-shadow: 0 1px 2px rgba(4, 40, 30, 0.35);
+  text-shadow: 0 1px 2px rgba(30, 45, 36, 0.35);
   pointer-events: none;
 }
 
 .chat-orb:not(.chat-orb--dragging):hover {
   filter: brightness(1.05);
   box-shadow:
-    0 18px 34px -8px rgba(4, 60, 45, 0.6),
-    0 8px 14px -4px rgba(4, 60, 45, 0.4),
-    inset 0 2px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -6px 12px rgba(4, 40, 30, 0.3);
+    0 18px 34px -8px rgba(40, 60, 48, 0.5),
+    0 8px 14px -4px rgba(40, 60, 48, 0.35),
+    inset 0 2px 3px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 12px rgba(30, 45, 36, 0.3);
 }
 
 .chat-orb--open {
@@ -655,17 +686,17 @@ body {
   background:
     radial-gradient(
       circle at 32% 28%,
-      #7ee0c4 0%,
-      #2bb894 22%,
+      #c5d6cb 0%,
+      #8aa996 22%,
       var(--color-jade-500) 48%,
       var(--color-jade-600) 78%,
-      #04543f 100%
+      #3a5746 100%
     );
   box-shadow:
-    0 4px 8px -2px rgba(4, 60, 45, 0.4),
+    0 4px 8px -2px rgba(40, 60, 48, 0.35),
     inset 0 1px 2px rgba(255, 255, 255, 0.4),
-    inset 0 -3px 6px rgba(4, 40, 30, 0.3);
-  text-shadow: 0 1px 1px rgba(4, 40, 30, 0.3);
+    inset 0 -3px 6px rgba(30, 45, 36, 0.3);
+  text-shadow: 0 1px 1px rgba(30, 45, 36, 0.3);
 }
 
 .chat-panel {

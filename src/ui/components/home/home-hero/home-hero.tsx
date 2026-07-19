@@ -1,13 +1,12 @@
 import { siteConfig } from "@/config/site.config";
+import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { Container } from "@/ui/components/primitives/container";
 import { ButtonLink } from "@/ui/components/primitives/button-link";
 import { HeroMedia } from "@/ui/components/home/home-hero/hero-media";
 import type { HomeContent } from "@/domain/site/site-content.types";
 
-// Cinematic full-bleed hero: brand leads, one headline, one sentence, CTAs, and
-// a dominant visual plane. Photo when available; otherwise a crafted stage art.
-// 电影感全幅首屏：品牌主导、一句标题、一句说明、行动按钮与主导视觉平面；
-// 有图用图，无图时使用精心构图的舞台视觉。
+// Cinematic full-bleed hero: official VI logo leads, one headline, one line, CTAs.
+// 电影感全幅首屏：正式 VI 标志主导，一句标题、一句说明与行动按钮。
 export function HomeHero({ content }: { content: HomeContent }) {
   return (
     <section className="hero-stage">
@@ -17,9 +16,15 @@ export function HomeHero({ content }: { content: HomeContent }) {
 
       <Container className="hero-stage__content">
         <div className="hero-stage__copy">
-          <p className="hero-stage__brand motion-clip">
-            {siteConfig.brandName}
-          </p>
+          <div className="motion-clip">
+            <BrandLogo
+              variant="primary"
+              linked={false}
+              priority
+              className="hero-stage__brand"
+            />
+            <span className="sr-only">{siteConfig.brandName}</span>
+          </div>
           <h1 className="hero-stage__title motion-rise">{content.heroTitle}</h1>
           <p className="hero-stage__lead motion-rise-delay">
             {content.heroSubtitle}

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/app/admin/_actions/guard";
 import { logoutAction } from "@/app/admin/_actions/auth.actions";
+import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { AdminNav } from "@/ui/components/admin/layout/admin-nav";
 import { siteConfig } from "@/config/site.config";
 
@@ -22,9 +23,7 @@ export default async function AdminPanelLayout({
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-8 lg:flex-row">
         <aside className="border border-mist-100/10 bg-white p-5 lg:w-64 lg:flex-shrink-0">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center bg-jade-500 font-display text-lg font-black text-white">
-              青
-            </span>
+            <BrandLogo variant="mark" linked={false} className="h-10 w-10" />
             <div className="leading-tight">
               <p className="font-display text-sm font-bold text-mist-100">
                 {siteConfig.brandName}

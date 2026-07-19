@@ -24,7 +24,12 @@ export function HeroMedia({ imageUrl }: { imageUrl: string }) {
         />
       ) : (
         <div className="hero-stage__art">
-          <span className="hero-stage__glyph">青</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/QingyiMedia_Mark_White.svg"
+            alt=""
+            className="hero-stage__glyph-mark"
+          />
           <span className="hero-stage__mark">{siteConfig.brandNameEn}</span>
           <div className="hero-stage__bars" />
         </div>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site.config";
+import { BrandLogo } from "@/ui/components/brand/brand-logo";
 import { LoginForm } from "@/ui/components/admin/auth/login-form";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +28,11 @@ export default async function AdminLoginPage({
     <div className="grid min-h-screen place-items-center bg-ink-950 px-5">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center bg-jade-500 font-display text-2xl font-black text-white">
-            青
-          </span>
+          <BrandLogo
+            variant="mark"
+            linked={false}
+            className="mx-auto h-14 w-14"
+          />
           <h1 className="mt-4 font-display text-xl font-bold text-mist-100">
             {siteConfig.brandName} 管理后台
           </h1>
