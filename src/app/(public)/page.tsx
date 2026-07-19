@@ -4,7 +4,6 @@ import { SectionHeading } from "@/ui/components/primitives/section-heading";
 import { StreamerCard } from "@/ui/components/cards/streamer-card/streamer-card";
 import { PostCard } from "@/ui/components/cards/post-card/post-card";
 import { HomeHero } from "@/ui/components/home/home-hero/home-hero";
-import { ConvergenceVenn } from "@/ui/components/home/convergence-venn/convergence-venn";
 import { siteContentService } from "@/domain/site/site-content.service";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { postService } from "@/domain/blog/post.service";
@@ -46,22 +45,17 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Creative Ops"
               title="内容产业里的三件实事"
-              lead="人设、分发、变现三件能落地的事；站在网络、计算与内容的交汇处做直播与短视频。"
+              lead="人设真实感、算法可见性、内容 IP 变现——只做能落地的陪跑。"
             />
-            <div className="ops-compose mt-12">
-              <ol className="ops-compose__list">
-                {home.highlights.map((item, index) => (
-                  <li key={`${item.title}-${index}`} className="ops-compose__item">
-                    <p className="ops-compose__index">0{index + 1}</p>
-                    <div>
-                      <h3 className="ops-compose__title">{item.title}</h3>
-                      <p className="ops-compose__body">{item.description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              <ConvergenceVenn />
-            </div>
+            <ol className="practice-grid mt-12">
+              {home.highlights.map((item, index) => (
+                <li key={`${item.title}-${index}`} className="practice-grid__item">
+                  <p className="practice-grid__index">0{index + 1}</p>
+                  <h3 className="practice-grid__title">{item.title}</h3>
+                  <p className="practice-grid__body">{item.description}</p>
+                </li>
+              ))}
+            </ol>
           </Container>
         </section>
       ) : null}

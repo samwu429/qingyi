@@ -697,13 +697,12 @@ body {
   industry circles. No separate full-width Venn band.
   「三件实事」与三圈图同一构图：左侧实务列表，右侧产业交汇圆，不再单独占带。
 */
-/* One section: three practices on top, convergence mark full-width below. */
-.ops-compose {
-  display: grid;
-  gap: 2.75rem;
-}
-
-.ops-compose__list {
+/*
+  Creative Ops — three practices in one calm band.
+  Hairline columns on desktop; stacked rhythm on mobile. No diagram clutter.
+  三件实事：桌面细线分栏，移动端纵向节奏；不再塞交汇图。
+*/
+.practice-grid {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -712,103 +711,55 @@ body {
   border-top: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
 }
 
-@media (min-width: 800px) {
-  .ops-compose__list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0;
-    border-top: none;
-    border-left: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
-  }
-
-  .ops-compose__item {
-    border-bottom: none;
-    border-right: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
-    padding: 0 1.35rem 0 1.1rem;
-    min-height: 100%;
-  }
-
-  .ops-compose__item:first-child {
-    padding-left: 0;
-  }
-}
-
-.ops-compose__item {
-  display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
-  gap: 0.75rem 0.9rem;
-  padding: 1.2rem 0;
+.practice-grid__item {
+  padding: 1.75rem 0;
   border-bottom: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
 }
 
-.ops-compose__index {
-  margin: 0.15rem 0 0;
+.practice-grid__index {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  line-height: 1;
+  letter-spacing: 0.04em;
   color: var(--color-jade-500);
 }
 
-.ops-compose__title {
-  margin: 0;
+.practice-grid__title {
+  margin: 0.85rem 0 0;
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--color-mist-100);
 }
 
-.ops-compose__body {
-  margin: 0.4rem 0 0;
-  font-size: 0.84rem;
-  line-height: 1.65;
+.practice-grid__body {
+  margin: 0.7rem 0 0;
+  max-width: 28rem;
+  font-size: 0.925rem;
+  line-height: 1.75;
   color: var(--color-mist-300);
 }
 
-.convergence-venn {
-  margin: 0 auto;
-  width: min(100%, 36rem);
-}
+@media (min-width: 800px) {
+  .practice-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: none;
+    border-left: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
+  }
 
-.convergence-venn__svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
+  .practice-grid__item {
+    padding: 0.15rem 1.75rem 0.15rem 1.5rem;
+    border-bottom: none;
+    border-right: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
+  }
 
-.convergence-venn__discs circle {
-  fill: color-mix(in srgb, var(--color-jade-500) 20%, #ffffff);
-  mix-blend-mode: multiply;
-}
+  .practice-grid__item:first-child {
+    padding-left: 0;
+  }
 
-.convergence-venn__frame {
-  fill: var(--color-mist-100);
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.convergence-venn__callout {
-  fill: var(--color-jade-600);
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.convergence-venn__core {
-  fill: var(--color-mist-100);
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.convergence-venn__caption {
-  margin: 0.15rem 0 0;
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--color-jade-600);
+  .practice-grid__body {
+    max-width: none;
+  }
 }
