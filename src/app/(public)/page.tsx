@@ -60,7 +60,7 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ol>
-              <ConvergenceVenn className="ops-compose__venn" />
+              <ConvergenceVenn />
             </div>
           </Container>
         </section>

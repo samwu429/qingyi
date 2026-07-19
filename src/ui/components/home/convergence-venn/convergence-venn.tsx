@@ -1,23 +1,24 @@
 import { cn } from "@/lib/ui/cn";
 
-// Soft-fill convergence mark. Only 「内容 IP」 sits inside the triple core;
-// practice words annotate from outside the outer cusps so nothing crosses an arc.
-// 叠色交汇图：圈内仅「内容 IP」；业务词从外侧尖角标注，不与任何弧线交叉。
+// Soft-fill convergence mark. Label boxes are clearance-checked against all
+// three circumferences (≥12px). Only 「内容 IP」 lives inside the triple core.
+// 叠色交汇图：全部标签相对三圆周做间距校验；仅「内容 IP」落在三圈核心内。
 
 type ConvergenceVennProps = {
   className?: string;
 };
 
-const A = { cx: 360, cy: 220, r: 175 };
-const B = { cx: 255, cy: 365, r: 175 };
-const C = { cx: 465, cy: 365, r: 175 };
+/** viewBox 800×660 — discs sit in the middle with air for every label. */
+const A = { cx: 400, cy: 255, r: 140 };
+const B = { cx: 315, cy: 375, r: 140 };
+const C = { cx: 485, cy: 375, r: 140 };
 
 export function ConvergenceVenn({ className }: ConvergenceVennProps) {
   return (
     <figure className={cn("convergence-venn", className)}>
       <svg
         className="convergence-venn__svg"
-        viewBox="0 0 720 620"
+        viewBox="0 0 800 660"
         role="img"
         aria-label="通信网络、计算技术与内容媒体三圈交汇：实时推流、互动直播、短视频算法，核心为内容 IP"
       >
@@ -28,48 +29,51 @@ export function ConvergenceVenn({ className }: ConvergenceVennProps) {
         </g>
 
         <g className="convergence-venn__frame">
-          <text x="360" y="48" textAnchor="middle">
-            <tspan x="360" dy="0">
+          <text x="400" y="58" textAnchor="middle">
+            <tspan x="400" dy="0">
               Communications
             </tspan>
-            <tspan x="360" dy="15">
+            <tspan x="400" dy="15">
               Networks
             </tspan>
           </text>
-          <text x="72" y="470" textAnchor="middle">
-            <tspan x="72" dy="0">
+          <text x="68" y="386" textAnchor="middle">
+            <tspan x="68" dy="0">
               Computing /
             </tspan>
-            <tspan x="72" dy="15">
-              Information Technology
+            <tspan x="68" dy="15">
+              Information
+            </tspan>
+            <tspan x="68" dy="15">
+              Technology
             </tspan>
           </text>
-          <text x="648" y="470" textAnchor="middle">
-            <tspan x="648" dy="0">
+          <text x="732" y="398" textAnchor="middle">
+            <tspan x="732" dy="0">
               Content
             </tspan>
-            <tspan x="648" dy="15">
+            <tspan x="732" dy="15">
               (Media)
             </tspan>
           </text>
         </g>
 
         <g className="convergence-venn__callout">
-          <text x="152" y="178" textAnchor="middle">
+          <text x="187" y="203" textAnchor="middle">
             实时推流
           </text>
-          <text x="568" y="178" textAnchor="middle">
+          <text x="613" y="203" textAnchor="middle">
             互动直播
           </text>
-          <text x="360" y="580" textAnchor="middle">
+          <text x="400" y="553" textAnchor="middle">
             短视频算法
           </text>
         </g>
 
         <text
           className="convergence-venn__core"
-          x="360"
-          y="317"
+          x="400"
+          y="335"
           textAnchor="middle"
           dominantBaseline="middle"
         >
