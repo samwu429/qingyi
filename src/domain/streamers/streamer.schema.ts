@@ -12,12 +12,16 @@ const socialLinkSchema = z.object({
 });
 
 export const streamerStatusValues = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+export const streamerBioFormatValues = ["MARKDOWN", "HTML"] as const;
 
 export const streamerInputSchema = z.object({
   name: z.string().trim().min(1, "请填写主播名称").max(60),
   slug: optionalAsciiSlugSchema(80),
   tagline: z.string().trim().max(120).optional().or(z.literal("")),
-  bio: z.string().trim().max(4000).optional().or(z.literal("")),
+  // Same authoring envelope as blog posts — no tight max so HTML embeds fit.
+  // 与资讯正文同级容量，便于 HTML 嵌入长图 / PDF。
+  bio: z.string().trim().max(200_000).optional().or(z.literal("")),
+  bioFormat: z.enum(streamerBioFormatValues).default("MARKDOWN"),
   avatarUrl: optionalUrlSchema,
   coverUrl: optionalUrlSchema,
   platform: z.string().trim().max(40).optional().or(z.literal("")),

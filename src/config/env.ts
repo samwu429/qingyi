@@ -52,12 +52,24 @@ export function isCloudinaryConfigured(): boolean {
   );
 }
 
-// Server-side Groq configuration for the on-site chat assistant. The key is
-// optional so the site runs (with the chat disabled) when it is not provided.
-// 站内聊天助手的服务端 Groq 配置。密钥为可选项，未配置时站点照常运行（聊天关闭）。
+// Server-side Groq configuration for the on-site chat assistant and the admin
+// operations assistant. The key is optional so the site runs (with AI disabled)
+// when it is not provided.
+// 站内客服与后台运营助手的 Groq 配置。密钥为可选项，未配置时站点照常运行（AI 关闭）。
 export const groqConfig = {
   apiKey: process.env.GROQ_API_KEY ?? "",
   model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+  // Multimodal + tool-calling model for admin uploads (screenshots → DB writes).
+  // 后台上传（截图入库）用的多模态 + 工具调用模型。
+  visionModel:
+    process.env.GROQ_VISION_MODEL ||
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+  // Admin tool loop defaults to the vision model so text + images share one path.
+  // 后台工具循环默认走视觉模型，使纯文本与带图请求共用同一路径。
+  adminModel:
+    process.env.GROQ_ADMIN_MODEL ||
+    process.env.GROQ_VISION_MODEL ||
+    "meta-llama/llama-4-scout-17b-16e-instruct",
 } as const;
 
 export function isGroqConfigured(): boolean {

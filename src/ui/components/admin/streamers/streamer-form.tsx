@@ -9,6 +9,7 @@ import {
   TextInput,
 } from "@/ui/components/admin/form/fields";
 import { ImageUrlField } from "@/ui/components/admin/media/image-url-field";
+import { ContentMediaInserter } from "@/ui/components/admin/media/content-media-inserter";
 import { initialActionResult } from "@/app/admin/_actions/action-result";
 import type { ActionResult } from "@/app/admin/_actions/action-result";
 import type { SocialLink } from "@/domain/streamers/streamer.schema";
@@ -49,6 +50,9 @@ export function StreamerForm({
   );
   const [socials, setSocials] = useState<SocialLink[]>(
     readSocials(streamer?.socials),
+  );
+  const [bioFormat, setBioFormat] = useState<"MARKDOWN" | "HTML">(
+    streamer?.bioFormat ?? "MARKDOWN",
   );
 
   const fieldError = (name: string) => state.fieldErrors?.[name];
@@ -176,14 +180,44 @@ export function StreamerForm({
         />
       </Field>
 
-      <Field label="主播简介" htmlFor="bio">
+      <Field
+        label="简介格式"
+        htmlFor="bioFormat"
+        hint={
+          bioFormat === "HTML"
+            ? "HTML 模式：可自由使用 HTML/CSS、内联 SVG、长图与 PDF iframe，与资讯正文相同。"
+            : "Markdown 模式：常规图文，支持 ![](图片) 与长图。"
+        }
+      >
+        <Select
+          id="bioFormat"
+          name="bioFormat"
+          value={bioFormat}
+          onChange={(event) =>
+            setBioFormat(event.target.value as "MARKDOWN" | "HTML")
+          }
+        >
+          <option value="MARKDOWN">Markdown（图文）</option>
+          <option value="HTML">HTML / CSS（自由排版）</option>
+        </Select>
+      </Field>
+
+      <Field
+        label={
+          bioFormat === "HTML" ? "主播简介（HTML / CSS）" : "主播简介（支持 Markdown）"
+        }
+        htmlFor="bio"
+        hint={fieldError("bio")}
+      >
         <TextArea
           id="bio"
           name="bio"
           defaultValue={streamer?.bio ?? ""}
-          className="min-h-40"
+          className="min-h-80 font-mono"
         />
       </Field>
+
+      <ContentMediaInserter format={bioFormat} />
 
       <fieldset className="border border-mist-100/10 p-5">
         <legend className="px-2 text-sm font-medium text-mist-200">

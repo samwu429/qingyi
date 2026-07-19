@@ -34,6 +34,7 @@ function toPersistencePayload(input: StreamerInput) {
     name: input.name.trim(),
     tagline: emptyToNull(input.tagline),
     bio: emptyToNull(input.bio),
+    bioFormat: input.bioFormat,
     avatarUrl: emptyToNull(input.avatarUrl),
     coverUrl: emptyToNull(input.coverUrl),
     platform: emptyToNull(input.platform),

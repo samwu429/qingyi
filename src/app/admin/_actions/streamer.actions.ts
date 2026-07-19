@@ -51,6 +51,7 @@ function buildInput(formData: FormData) {
     slug: formData.get("slug"),
     tagline: formData.get("tagline"),
     bio: formData.get("bio"),
+    bioFormat: formData.get("bioFormat") ?? "MARKDOWN",
     avatarUrl: formData.get("avatarUrl"),
     coverUrl: formData.get("coverUrl"),
     platform: formData.get("platform"),

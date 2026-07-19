@@ -7,6 +7,8 @@ import { ButtonLink } from "@/ui/components/primitives/button-link";
 import { RemoteImage } from "@/ui/components/media/remote-image";
 import { streamerService } from "@/domain/streamers/streamer.service";
 import { formatFollowers } from "@/lib/text/format";
+import { renderMarkdown } from "@/lib/content/markdown";
+import { renderRichHtml } from "@/lib/content/rich-html";
 import type { SocialLink } from "@/domain/streamers/streamer.schema";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +57,12 @@ export default async function StreamerDetailPage({
 
   const socials = parseSocials(streamer.socials);
   const hasCover = Boolean(streamer.coverUrl);
+  const isHtmlBio = streamer.bioFormat === "HTML";
+  const bioHtml = streamer.bio
+    ? isHtmlBio
+      ? renderRichHtml(streamer.bio)
+      : renderMarkdown(streamer.bio)
+    : null;
 
   return (
     <div>
@@ -126,14 +134,15 @@ export default async function StreamerDetailPage({
           </div>
         ) : null}
 
-        {streamer.bio ? (
+        {bioHtml ? (
           <div className="mt-10 max-w-3xl">
             <h2 className="font-display text-xl font-bold text-mist-100">
               主播简介
             </h2>
-            <div className="prose-content mt-4 whitespace-pre-wrap">
-              {streamer.bio}
-            </div>
+            <div
+              className={`${isHtmlBio ? "rich-content" : "prose-content"} mt-4`}
+              dangerouslySetInnerHTML={{ __html: bioHtml }}
+            />
           </div>
         ) : null}
 

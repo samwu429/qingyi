@@ -4,12 +4,10 @@ import { useRef, useState, type DragEvent } from "react";
 
 type UploadedKind = "image" | "svg" | "pdf";
 
-// Upload helper for article bodies. Accepts images, SVG, and PDF, uploads via the
-// authenticated media API, then offers ready-to-paste snippets tailored to the
-// current authoring format (Markdown vs HTML). This is how authors embed long
-// images, SVG illustrations, and PDF documents into 资讯 articles.
-// 文章正文的上传助手：支持图片、SVG、PDF，经已认证媒体接口上传后，按当前撰写格式
-//（Markdown / HTML）给出可直接粘贴的代码片段，用于在资讯文章中嵌入长图、SVG 与 PDF。
+// Upload helper for rich bodies (blog posts + streamer bios). Accepts images,
+// SVG, and PDF, uploads via the authenticated media API, then offers
+// ready-to-paste snippets tailored to Markdown vs HTML.
+// 资讯正文与主播简介共用的上传助手：支持图片、SVG、PDF，按 Markdown / HTML 给出可粘贴片段。
 export function ContentMediaInserter({ format }: { format: "MARKDOWN" | "HTML" }) {
   const [url, setUrl] = useState("");
   const [kind, setKind] = useState<UploadedKind>("image");

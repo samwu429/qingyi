@@ -43,13 +43,17 @@ model AdminUser {
 }
 
 // Signed streamer profile presented in the guild roster.
+// Bio supports the same Markdown / HTML authoring formats as blog posts
+// (long images, SVG, PDF embeds via the HTML format).
 // 公会主播名录中展示的签约主播档案。
+// 简介与资讯相同，支持 Markdown / HTML（HTML 可嵌长图、SVG、PDF）。
 model Streamer {
   id           String            @id @default(cuid())
   slug         String            @unique
   name         String
   tagline      String?
   bio          String?
+  bioFormat    PostFormat        @default(MARKDOWN)
   avatarUrl    String?
   coverUrl     String?
   platform     String?
