@@ -116,9 +116,9 @@ async function runToolLoop(
   messages: ChatMessage[],
   ctx: AdminToolContext,
 ): Promise<AdminAssistantResult> {
-  // Prefer the text chat model for tools; fall back to adminModel.
-  // 工具调用优先用文本对话模型，失败再回退 adminModel。
-  const toolModel = groqConfig.model || groqConfig.adminModel;
+  // Text tool-calling model (not the vision extract model).
+  // 文本工具调用模型（不用视觉抽取模型）。
+  const toolModel = groqConfig.adminModel || groqConfig.model;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     const completion = await groqChatCompletion({
