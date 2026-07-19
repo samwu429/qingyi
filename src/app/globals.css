@@ -699,14 +699,14 @@ body {
 */
 .ops-compose {
   display: grid;
-  gap: 2.25rem;
+  gap: 2.5rem;
   align-items: center;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 960px) {
   .ops-compose {
-    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.95fr);
-    gap: 2.5rem 3rem;
+    grid-template-columns: minmax(0, 0.85fr) minmax(24rem, 1.25fr);
+    gap: 1.75rem 2.5rem;
   }
 }
 
@@ -723,7 +723,7 @@ body {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr);
   gap: 0.85rem 1rem;
-  padding: 1.35rem 0;
+  padding: 1.25rem 0;
   border-bottom: 1px solid color-mix(in srgb, var(--color-mist-100) 12%, transparent);
 }
 
@@ -739,68 +739,60 @@ body {
 .ops-compose__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 700;
   line-height: 1.35;
   color: var(--color-mist-100);
 }
 
 .ops-compose__body {
-  margin: 0.45rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.7;
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
   color: var(--color-mist-300);
 }
 
 .ops-compose__venn {
-  width: min(100%, 26rem);
+  width: min(100%, 34rem);
   margin-inline: auto;
+  justify-self: center;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 960px) {
   .ops-compose__venn {
     width: 100%;
-    max-width: 28rem;
-    margin-inline: 0 0 auto;
+    max-width: none;
+    margin-inline: 0;
+    justify-self: end;
   }
 }
 
 .convergence-venn {
-  position: relative;
+  margin: 0;
 }
 
 .convergence-venn__svg {
   display: block;
   width: 100%;
   height: auto;
+  overflow: visible;
 }
 
-.convergence-venn__disc {
-  fill: color-mix(in srgb, var(--color-jade-500) 20%, transparent);
+.convergence-venn__discs circle {
+  fill: color-mix(in srgb, var(--color-jade-500) 20%, #ffffff);
   mix-blend-mode: multiply;
 }
 
-.convergence-venn__rings circle {
-  stroke: color-mix(in srgb, var(--color-mist-100) 36%, transparent);
-  stroke-width: 1;
-}
-
-.convergence-venn__outer {
+.convergence-venn__frame {
   fill: var(--color-mist-100);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
-/* Paper knockout under intersection type so arcs never bisect glyphs. */
-.convergence-venn__plate {
-  fill: var(--color-ink-950);
-  fill-opacity: 0.94;
-}
-
-.convergence-venn__pair {
-  fill: var(--color-mist-100);
+.convergence-venn__callout {
+  fill: var(--color-jade-600);
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
@@ -809,14 +801,15 @@ body {
 .convergence-venn__core {
   fill: var(--color-mist-100);
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
 }
 
-.convergence-venn__core-sub {
-  fill: var(--color-jade-600);
-  font-family: var(--font-sans);
-  font-size: 10px;
+.convergence-venn__caption {
+  margin: 0.1rem 0 0;
+  text-align: center;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  color: var(--color-jade-600);
 }
